@@ -1,6 +1,6 @@
 extensions[ bitmap ]
 
-to setup_map
+to import_map
 
   ca
 
@@ -20,15 +20,45 @@ to setup_map
 
   set-patch-size 1
 
+  set image bitmap:to-grayscale image
+
+  ;bitmap:copy-to-pcolors image False
+
   import-pcolors-rgb image-file
 
+end
+
+to draw_map_SC
+  ;resize map
+  resize-world -50 * scale 50 * scale -100 * scale 100 * scale
+  ask patches[
+    set pcolor white
+    ;paint rectangle
+    if ((abs pycor / scale = 84) and (pxcor / scale <= 38) and (pxcor / scale >= -38)) or
+       ((abs pxcor / scale = 38) and (pycor / scale <= 84) and (pycor / scale >= -84)) [
+      set pcolor black
+    ]
+
+    ;paint exits
+    ;S EXIT
+    if ((pycor / scale = -84) and (pxcor / scale <= 5.4) and (pxcor / scale >= -5.4)) [ set pcolor green ]
+    ;N EXIT
+    if ((pycor / scale = 84) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) [ set pcolor green ]
+    ;SE AND SW EXITS
+    if ((abs pxcor / scale = 38) and (pycor / scale >= -84) and (pycor / scale <= -73)) [ set pcolor green ]
+    ;NE AND NW EXITS
+    if ((abs pxcor / scale = 38) and (pycor / scale >= 73) and (pycor / scale <= 84)) [ set pcolor green ]
+
+    ;statue
+    if (abs pycor / scale <= 6.25) and (abs pxcor / scale <= 5) [ set pcolor black ]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
 10
-914
-440
+419
+420
 -1
 -1
 1.0
@@ -41,10 +71,10 @@ GRAPHICS-WINDOW
 1
 1
 1
-0
-695
-0
-420
+-100
+100
+-200
+200
 0
 0
 1
@@ -57,7 +87,7 @@ BUTTON
 110
 58
 setup map
-setup_map
+import_map
 NIL
 1
 T
@@ -67,6 +97,34 @@ NIL
 NIL
 NIL
 1
+
+BUTTON
+5
+68
+111
+110
+San Carlo
+draw_map_SC
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+INPUTBOX
+7
+119
+111
+179
+scale
+2.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
