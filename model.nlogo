@@ -34,20 +34,20 @@ to draw_map_SC
   ask patches[
     set pcolor white
     ;paint rectangle
-    if ((abs pycor / scale = 84) and (pxcor / scale <= 38) and (pxcor / scale >= -38)) or
-       ((abs pxcor / scale = 38) and (pycor / scale <= 84) and (pycor / scale >= -84)) [
+    if ((abs pycor / scale >= 84) and (abs pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 38) and (pxcor / scale >= -38)) or
+       ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale <= 84) and (pycor / scale >= -84)) [
       set pcolor black
     ]
 
     ;paint exits
     ;S EXIT
-    if ((pycor / scale = -84) and (pxcor / scale <= 5.4) and (pxcor / scale >= -5.4)) [ set pcolor green ]
+    if ((pycor / scale <= -84) and (pycor / scale >= -84 - wall-thickness) and (pxcor / scale <= 5.4) and (pxcor / scale >= -5.4)) [ set pcolor green ]
     ;N EXIT
-    if ((pycor / scale = 84) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) [ set pcolor green ]
+    if ((pycor / scale >= 84) and (pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) [ set pcolor green ]
     ;SE AND SW EXITS
-    if ((abs pxcor / scale = 38) and (pycor / scale >= -84) and (pycor / scale <= -73)) [ set pcolor green ]
+    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= -84) and (pycor / scale <= -73)) [ set pcolor green ]
     ;NE AND NW EXITS
-    if ((abs pxcor / scale = 38) and (pycor / scale >= 73) and (pycor / scale <= 84)) [ set pcolor green ]
+    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= 73) and (pycor / scale <= 84)) [ set pcolor green ]
 
     ;statue
     if (abs pycor / scale <= 6.25) and (abs pxcor / scale <= 5) [ set pcolor black ]
@@ -122,6 +122,17 @@ INPUTBOX
 179
 scale
 2.0
+1
+0
+Number
+
+INPUTBOX
+7
+183
+110
+243
+wall-thickness
+1.0
 1
 0
 Number
