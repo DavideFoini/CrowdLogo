@@ -1,5 +1,22 @@
 extensions[ bitmap ]
+breed[people person]
 
+;person class
+people-own[
+  speed
+  destination
+  health_state
+  evac_time
+  aware ;T/F
+  evacuated ;T/F
+]
+
+;square meter class
+patches-own[
+  num_people
+]
+
+;import map image from file
 to import_map
 
   ca
@@ -28,13 +45,18 @@ to import_map
 
 end
 
+;draw map manually
+;GREEN - gate
+;BLACK - wall
+;BLUE - outside
+;WHITE - inside
 to draw_map_SC
   ;resize map
   resize-world -50 * scale 50 * scale -100 * scale 100 * scale
   ask patches[
     set pcolor white
     ;paint rectangle
-    if ((abs pycor / scale >= 84) and (abs pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 38) and (pxcor / scale >= -38)) or
+    if ((abs pycor / scale >= 84) and (abs pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 39) and (pxcor / scale >= -39)) or
        ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale <= 84) and (pycor / scale >= -84)) [
       set pcolor black
     ]
@@ -51,7 +73,44 @@ to draw_map_SC
 
     ;statue
     if (abs pycor / scale <= 6.25) and (abs pxcor / scale <= 5) [ set pcolor black ]
+
+    ;outside
+    if (abs pycor / scale > 84 + wall-thickness) or (abs pxcor / scale > 38 + wall-thickness) [ set pcolor blue ]
   ]
+end
+
+;spawn people in the area equals to glob var population
+to setup
+  clear-all
+  reset-ticks
+end
+
+;start people random movement
+to start_simulation
+
+end
+
+;start evacuation - also main loop
+to start_evacuation
+
+end
+
+;move input person towards his/her dest
+to move_person[to_move]
+
+
+
+end
+
+;update health, evacuated, speed
+to update_people_status
+
+
+end
+
+;check if simulation should go on or end
+to check_evacuation_status
+
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -133,6 +192,17 @@ INPUTBOX
 243
 wall-thickness
 1.0
+1
+0
+Number
+
+INPUTBOX
+6
+248
+111
+308
+population
+0.0
 1
 0
 Number
