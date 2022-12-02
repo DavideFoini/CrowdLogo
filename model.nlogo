@@ -1,6 +1,6 @@
 extensions[ bitmap ]
 breed[people person]
-
+; CHECK FOR SOCIAL FORCES MODELS
 ;person class
 people-own[
   speed
@@ -83,17 +83,23 @@ end
 to setup
   clear-all
   reset-ticks
+  ;draw map
   draw_map_SC
+  ;spawn people
   create-people population [
     set color green
     set shape "person"
+    ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
 end
 
 ;start people random movement
 to start_simulation
-
+  ask people [
+    facexy random-xcor random-ycor
+    if [pcolor] of patch-ahead 1 = white [forward 1]
+  ]
 end
 
 ;start evacuation - also main loop
@@ -123,9 +129,9 @@ to check_evacuation_status
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+496
 10
-419
+705
 420
 -1
 -1
@@ -166,23 +172,6 @@ NIL
 NIL
 1
 
-BUTTON
-5
-68
-111
-110
-San Carlo
-draw_map_SC
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
 INPUTBOX
 7
 119
@@ -211,7 +200,7 @@ INPUTBOX
 111
 308
 population
-10000.0
+1000.0
 1
 0
 Number
@@ -224,6 +213,23 @@ BUTTON
 NIL
 setup
 NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+366
+10
+490
+43
+NIL
+start_simulation
+T
 1
 T
 OBSERVER
