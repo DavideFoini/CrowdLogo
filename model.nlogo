@@ -83,6 +83,12 @@ end
 to setup
   clear-all
   reset-ticks
+  draw_map_SC
+  create-people population [
+    set color green
+    set shape "person"
+    move-to one-of patches with [pcolor = white]
+  ]
 end
 
 ;start people random movement
@@ -110,6 +116,9 @@ end
 
 ;check if simulation should go on or end
 to check_evacuation_status
+
+
+
 
 end
 @#$#@#$#@
@@ -202,10 +211,27 @@ INPUTBOX
 111
 308
 population
-0.0
+10000.0
 1
 0
 Number
+
+BUTTON
+115
+10
+196
+57
+NIL
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
