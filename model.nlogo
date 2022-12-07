@@ -2,6 +2,13 @@ extensions[ bitmap ]
 breed[people person]
 ; CHECK FOR SOCIAL FORCES MODELS
 ;person class
+
+globals [
+  alarm?
+  ;time_of_evacuation
+]
+
+
 people-own[
   speed
   destination
@@ -9,11 +16,13 @@ people-own[
   evac_time
   aware ;T/F
   evacuated ;T/F
+  escaping; T/F
 ]
 
 ;square meter class
 patches-own[
   num_people
+  ifdoor
 ]
 
 ;import map image from file
@@ -89,28 +98,58 @@ to setup
   create-people population [
     set color green
     set shape "person"
+    set aware false
+    set escaping false
     ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
+  set alarm? false
+  ;set time_of_evacuation 0
+  ask n-of (round aware_fraction / 100 * population) people [set aware true]
+
 end
 
 ;start people random movement
 to start_simulation
+if (alarm? = false)
+  [
   ask people [
     facexy random-xcor random-ycor
     if [pcolor] of patch-ahead 1 = white [forward 1]
+  ]
+  ]
+    ;end of evacuation
+  if (count people = 0 and alarm? = true) [set alarm? false stop]
+  ;set escaping true to everyone
+  if(alarm? = true) [ask people [set escaping true]]
+  ask people [
+    if(escaping)[move_person]
   ]
 end
 
 ;start evacuation - also main loop
 to start_evacuation
-
+set alarm? true
+ask people [
+      ifelse(aware = true)
+        [ set destination min-one-of patches with [pcolor = green] [distance myself]]
+        [ set destination one-of (patches with [pcolor = green])]
+        ]
 end
 
 ;move input person towards his/her dest
-to move_person[to_move]
+to move_person;[to_move]
 
-
+    ask people [
+      if (distance destination > 1)
+      [
+        face destination
+        if [pcolor] of patch-ahead 1 = white [forward 1]
+        if [pcolor] of patch-ahead 1 = green  [die]
+        ;if [pcolor] of patch-ahead 1 = black [move-to min-one-of neighbors4 with [pcolor = white] [distance min-one-of patches with [pcolor = green][distance myself]] should be distance from destination
+        if [pcolor] of patch-ahead 1 = black [set destination one-of (patches with [pcolor = green])]
+    ]
+  ]
 
 end
 
@@ -238,6 +277,38 @@ NIL
 NIL
 NIL
 1
+
+BUTTON
+13
+70
+77
+103
+alarm
+start_evacuation
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+111
+70
+283
+103
+aware_fraction
+aware_fraction
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
