@@ -5,6 +5,7 @@ breed[people person]
 
 globals [
   alarm?
+  num_evacuated
   ;time_of_evacuation
 ]
 
@@ -15,7 +16,7 @@ people-own[
   health_state
   evac_time
   aware ;T/F
-  evacuated ;T/F
+  evacuated;T/F
   escaping; T/F
 ]
 
@@ -100,10 +101,12 @@ to setup
     set shape "person"
     set aware false
     set escaping false
+    set evacuated false
     ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
   set alarm? false
+  set num_evacuated 0
   ;set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
 
@@ -111,20 +114,23 @@ end
 
 ;start people random movement
 to start_simulation
-if (alarm? = false)
+  ;print evacuation_speed
+  if (alarm? = false)
   [
-  ask people [
-    facexy random-xcor random-ycor
-    if [pcolor] of patch-ahead 1 = white [forward 1]
-  ]
+    ask people [
+      facexy random-xcor random-ycor
+      if [pcolor] of patch-ahead 1 = white [forward 1]
+    ]
   ]
     ;end of evacuation
   if (count people = 0 and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
   if(alarm? = true) [ask people [set escaping true]]
-  ask people [
-    if(escaping)[move_person]
+  ask people with [escaping][
+    move_person
   ]
+  if (population = num_evacuated) [stop]
+  tick
 end
 
 ;start evacuation - also main loop
@@ -132,25 +138,25 @@ to start_evacuation
 set alarm? true
 ask people [
       ifelse(aware = true)
-        [ set destination min-one-of patches with [pcolor = green] [distance myself]]
-        [ set destination one-of (patches with [pcolor = green])]
-        ]
+        [set destination min-one-of patches with [pcolor = green] [distance myself]]
+        [set destination one-of (patches with [pcolor = green])]
+]
 end
 
 ;move input person towards his/her dest
 to move_person;[to_move]
-
-    ask people [
-      if (distance destination > 1)
-      [
-        face destination
-        if [pcolor] of patch-ahead 1 = white [forward 1]
-        if [pcolor] of patch-ahead 1 = green  [die]
-        ;if [pcolor] of patch-ahead 1 = black [move-to min-one-of neighbors4 with [pcolor = white] [distance min-one-of patches with [pcolor = green][distance myself]] should be distance from destination
-        if [pcolor] of patch-ahead 1 = black [set destination one-of (patches with [pcolor = green])]
+  if evacuated [die]
+  if (distance destination > 1)
+  [
+    face destination
+    if [pcolor] of patch-ahead 1 = white [forward 1]
+    if [pcolor] of patch-ahead 1 = green  [
+      set num_evacuated num_evacuated + 1
+      set evacuated true
     ]
+    ;if [pcolor] of patch-ahead 1 = black [move-to min-one-of neighbors4 with [pcolor = white] [distance min-one-of patches with [pcolor = green][distance myself]] should be distance from destination
+    if [pcolor] of patch-ahead 1 = black [set destination one-of (patches with [pcolor = green])]
   ]
-
 end
 
 ;update health, evacuated, speed
@@ -309,6 +315,35 @@ aware_fraction
 1
 NIL
 HORIZONTAL
+
+MONITOR
+719
+11
+782
+56
+Evacuated
+num_evacuated
+17
+1
+11
+
+PLOT
+133
+162
+483
+312
+Evacuation speed
+time
+evacuated
+0.0
+10.0
+0.0
+5.0
+true
+false
+"" ""
+PENS
+"evacuation speed" 1.0 0 -13840069 true "" "plot count people with [evacuated]"
 
 @#$#@#$#@
 ## WHAT IS IT?
