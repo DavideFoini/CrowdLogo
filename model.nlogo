@@ -7,6 +7,7 @@ globals [
   alarm?
   num_evacuated
   ;time_of_evacuation
+  max_people_on_patch
 ]
 
 
@@ -107,6 +108,7 @@ to setup
   ]
   set alarm? false
   set num_evacuated 0
+  set  max_people_on_patch 1
   ;set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
 
@@ -130,6 +132,7 @@ to start_simulation
     move_person
   ]
   if (population = num_evacuated) [stop]
+  ask patches [set num_people count people-here]
   tick
 end
 
@@ -146,17 +149,35 @@ end
 ;move input person towards his/her dest
 to move_person;[to_move]
   if evacuated [die]
-  if (distance destination > 1)
-  [
-    face destination
-    if [pcolor] of patch-ahead 1 = white [forward 1]
-    if [pcolor] of patch-ahead 1 = green  [
+  face destination
+  (ifelse
+    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
+
+    [pcolor = white and num_people >= max_people_on_patch] of patch-ahead 1
+    [
+      if any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
+      [
+        face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
+        forward 1
+      ]
+    ]
+    [pcolor = green  and num_people < max_people_on_patch] of patch-ahead 1  [
+      forward 1
       set num_evacuated num_evacuated + 1
       set evacuated true
     ]
-    ;if [pcolor] of patch-ahead 1 = black [move-to min-one-of neighbors4 with [pcolor = white] [distance min-one-of patches with [pcolor = green][distance myself]] should be distance from destination
-    if [pcolor] of patch-ahead 1 = black [set destination one-of (patches with [pcolor = green])]
-  ]
+
+    ;[pcolor = green and num_people >= max_people_on_patch] of patch-ahead 1
+    ;[
+     ; set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
+    ;]
+    [pcolor] of patch-ahead 1 = black
+    [
+      move-to min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
+      ;[distance min-one-of patches with [pcolor = green]
+    ]; should be distance from destination
+    ;[pcolor] of patch-ahead 1 = black [set destination one-of (patches with [pcolor = green])]
+  )
 end
 
 ;update health, evacuated, speed
@@ -234,7 +255,7 @@ INPUTBOX
 110
 243
 wall-thickness
-1.0
+0.0
 1
 0
 Number
@@ -310,7 +331,7 @@ aware_fraction
 aware_fraction
 0
 100
-50.0
+100.0
 1
 1
 NIL
