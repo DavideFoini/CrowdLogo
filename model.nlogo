@@ -114,7 +114,6 @@ to setup
   ]
   set alarm? false
   set  max_people_on_patch 10
-  set num_evacuated 0
   set level1 5
   set level2 7
   set level3 9
@@ -241,8 +240,8 @@ end
 GRAPHICS-WINDOW
 496
 10
-1005
-1020
+705
+420
 -1
 -1
 1.0
@@ -255,10 +254,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--250
-250
--500
-500
+-100
+100
+-200
+200
 0
 0
 1
@@ -288,7 +287,7 @@ INPUTBOX
 111
 179
 scale
-5.0
+2.0
 1
 0
 Number
@@ -375,7 +374,7 @@ aware_fraction
 aware_fraction
 0
 100
-0.0
+2.0
 1
 1
 NIL
