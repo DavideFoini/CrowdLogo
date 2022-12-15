@@ -8,6 +8,9 @@ globals [
   num_evacuated
   ;time_of_evacuation
   max_people_on_patch
+  level1
+  level2
+  level3
 ]
 
 
@@ -19,6 +22,7 @@ people-own[
   aware ;T/F
   evacuated;T/F
   escaping; T/F
+  dead; T/F
 ]
 
 ;square meter class
@@ -103,12 +107,17 @@ to setup
     set aware false
     set escaping false
     set evacuated false
+    set dead false
+    set health_state 10
     ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
   set alarm? false
   set num_evacuated 0
-  set  max_people_on_patch 1
+  set  max_people_on_patch 3
+  set level1 5
+  set level2 7
+  set level3 9
   ;set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
 
@@ -130,6 +139,7 @@ to start_simulation
   if(alarm? = true) [ask people [set escaping true]]
   ask people with [escaping][
     move_person
+    update_people_status
   ]
   if (population = num_evacuated) [stop]
   ask patches [set num_people count people-here]
@@ -182,8 +192,19 @@ end
 
 ;update health, evacuated, speed
 to update_people_status
-
-
+   ; get number of people on patch
+   let n count turtles-on patch-here
+   ; update health based on crowdness
+   if (n >= level1) and (n < level2) [set health_state health_state - 1]
+   if (n >= level2) and (n < level3) [set health_state health_state - 2]
+   if n >= level3 [set health_state health_state - 3]
+   ; die
+   if health_state = 0 [set dead true]
+   ; change color
+   if (health_state <= 10) and (health_state >= 8) [set color green]
+   if (health_state < 8) and (health_state >= 5) [set color yellow]
+   if (health_state < 5) and (health_state >= 1) [set color orange]
+   if health_state = 0 [set color red]
 end
 
 ;check if simulation should go on or end
@@ -266,7 +287,7 @@ INPUTBOX
 111
 308
 population
-1000.0
+10000.0
 1
 0
 Number
@@ -331,7 +352,7 @@ aware_fraction
 aware_fraction
 0
 100
-100.0
+18.0
 1
 1
 NIL
