@@ -101,7 +101,7 @@ to setup
   draw_map_SC
   ;spawn people
   create-people population [
-    set color red
+    set color green
     set shape "arrow"
     set size 5
     set aware false
@@ -118,8 +118,7 @@ to setup
   set level2 7
   set level3 9
   ;set time_of_evacuation 0
-  ask n-of (round aware_fraction / 100 * population) people [set aware true
-                                                            set color green]
+  ask n-of (round aware_fraction / 100 * population) people [set aware true]
 
 end
 
@@ -134,7 +133,9 @@ to start_simulation
     ]
   ]
     ;end of evacuation
-  if (count people = 0 and alarm? = true) [set alarm? false stop]
+;  print word "people" count people
+;  print word "victims" count people with [health_state = 0]
+  if ((count people) = (count people with [health_state = 0]) and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
   ask people with [escaping and health_state > 0][
     move_person
@@ -309,7 +310,7 @@ INPUTBOX
 111
 308
 population
-50.0
+10000.0
 1
 0
 Number
