@@ -101,7 +101,7 @@ to setup
   draw_map_SC
   ;spawn people
   create-people population [
-    set color red
+    set color green
     set shape "arrow"
     set size 5
     set aware false
@@ -118,8 +118,7 @@ to setup
   set level2 7
   set level3 9
   ;set time_of_evacuation 0
-  ask n-of (round aware_fraction / 100 * population) people [set aware true
-                                                            set color green]
+  ask n-of (round aware_fraction / 100 * population) people [set aware true]
 
 end
 
@@ -136,7 +135,7 @@ to start_simulation
     ;end of evacuation
   if (count people = 0 and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
-  ask people with [escaping][
+  ask people with [escaping = true and health_state > 0][
     move_person
     update_people_status
   ]
@@ -160,7 +159,21 @@ end
 ;move input person towards his/her dest
 to move_person;[to_move]
   if evacuated [die]
-  ;face destination
+  if any? neighbors with [(pcolor = green)][
+   (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
+       [
+        face min-one-of neighbors with [(pcolor = green) and num_people < max_people_on_patch][distance myself]
+        forward 1
+        set evacuated true
+       ]
+      [
+        set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
+        face destination
+       ]
+       )
+      ]
+
+
   (ifelse
     [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
 
@@ -309,7 +322,7 @@ INPUTBOX
 111
 308
 population
-50.0
+10000.0
 1
 0
 Number
@@ -374,7 +387,7 @@ aware_fraction
 aware_fraction
 0
 100
-2.0
+100.0
 1
 1
 NIL
