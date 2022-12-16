@@ -136,7 +136,7 @@ to start_simulation
     ;end of evacuation
   if (count people = 0 and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
-  ask people with [escaping][
+  ask people with [escaping and health_state > 0][
     move_person
     update_people_status
   ]
@@ -374,7 +374,7 @@ aware_fraction
 aware_fraction
 0
 100
-2.0
+50.0
 1
 1
 NIL
