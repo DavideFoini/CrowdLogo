@@ -1,4 +1,4 @@
-extensions[ bitmap ]
+extensions[ bitmap rnd]
 breed[people person]
 ; CHECK FOR SOCIAL FORCES MODELS
 ;person class
@@ -18,6 +18,10 @@ people-own[
   destination
   health_state
   evac_time
+  direction_to_go;
+  ;decision_to_take; T/F default true is rational decision
+  ;panic;T/F
+  ;panic_percentage; range (0,1]
   aware ;T/F
   evacuated;T/F
   escaping; T/F
@@ -104,7 +108,10 @@ to setup
   create-people population [
     set color rgb 0 255 0
     set shape "arrow"
-    set size 1
+    set size 5
+    ;set decision_to_take true;
+    ;set panic false
+    ;set panic_percentage 0;
     set aware false
     set escaping false
     set evacuated false
@@ -115,12 +122,14 @@ to setup
     move-to one-of patches with [pcolor = white]
   ]
   set alarm? false
-  set  max_people_on_patch 10
+  set max_people_on_patch 10
   set level1 5
   set level2 7
   set level3 9
   ;set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
+  ;ask n-of (round panic_fraction / 100 * population) people [set panic true]
+  ;ask people with [panic = true] [set panic_percentage random 10001 / 10000]; setting value in rage (0,1] if panic is present
 
 end
 
@@ -131,7 +140,13 @@ to start_simulation
   [
     ask people [
       set moved false
-      facexy random-xcor random-ycor
+      let items ["left" "right"]
+      let probabilities [0.5 0.5]
+      let pairs (map list items probabilities)
+      set direction_to_go first rnd:weighted-one-of-list pairs last
+      ifelse (direction_to_go = "right")
+      [right random 45]
+      [left random 45]
       if [pcolor] of patch-ahead 1 = white [forward 1 set moved true]
     ]
   ]
@@ -140,13 +155,30 @@ to start_simulation
 ;  print word "victims" count people with [health_state = 0]
   if ((count people) = (count people with [dead]) and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
-  ask people with [escaping = true and health_state > 0][
+  ask people with [escaping = true and health_state > 0 ;and ;panic = false;
+  ][
     update_people_status
     if not dead [
       set moved false
       move_person
     ]
   ]
+  ;ask people with [escaping = true and health_state > 0 and panic = true][
+    ;update_people_status
+    ;if not dead [
+      ;set moved false
+      ;let items [ false true];
+      ;let p [panic_percentage] of people
+  ;let probabilities [0.5 0.5] but shoudl be let probabilities [panic_percentage 1 - panic_percentage]
+      ;let pairs (map list items probabilities)
+      ;set decision_to_take first rnd:weighted-one-of-list pairs last
+      ;ifelse (decision_to_take = true)
+      ;[
+       ;set moved false
+       ;move_person]
+      ;[follow_crowd]
+    ;]
+  ;]
   ;if (population = num_evacuated) [stop]
   ask patches [set num_people count people-here]
   tick
@@ -155,13 +187,15 @@ end
 ;start evacuation - also main loop
 to start_evacuation
 set alarm? true
-ask people [
+  ask people[
     set escaping true
+    ;ifelse (panic = false)[
       ifelse(aware = true)
         [set destination min-one-of patches with [pcolor = green] [distance myself]]
         [set destination one-of patches with [pcolor = green]]
-    face destination
-]
+      face destination]
+    ;[facexy random-xcor random-ycor]
+  ;]
 end
 
 ;move input person towards his/her dest
@@ -279,6 +313,12 @@ end
 to-report get_injury_level
   report 6 - floor health_state / 15
 end
+
+;if people are with panic >0 they will tend to randomly follow other people instead of looking for an exit
+;to follow_crowd
+  ;face max-one-of patches [num_people]
+  ;forward 1
+;end
 @#$#@#$#@
 GRAPHICS-WINDOW
 496
@@ -335,7 +375,7 @@ INPUTBOX
 111
 308
 population
-10000.0
+1000.0
 1
 0
 Number
@@ -458,6 +498,21 @@ PENS
 "severe" 1.0 0 -1184463 true "" "plot count turtles with [color = rgb 255 204 0]"
 "critical" 1.0 0 -955883 true "" "plot count turtles with [color = rgb 255 102 0]"
 "fatal" 1.0 0 -2674135 true "" "plot count turtles with [color = rgb 255 0 0]"
+
+SLIDER
+303
+70
+475
+103
+panic_fraction
+panic_fraction
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
