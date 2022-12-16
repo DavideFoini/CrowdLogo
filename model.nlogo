@@ -5,7 +5,6 @@ breed[people person]
 
 globals [
   alarm?
-  num_evacuated
   ;time_of_evacuation
   max_people_on_patch
   level1
@@ -82,12 +81,12 @@ to draw_map_SC
     ;N EXIT
     if ((pycor / scale >= 84) and (pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) [ set pcolor green ]
     ;SE AND SW EXITS
-    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= -84) and (pycor / scale <= -73)) [ set pcolor green ]
+    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale > -84) and (pycor / scale <= -73)) [ set pcolor green ]
     ;NE AND NW EXITS
-    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= 73) and (pycor / scale <= 84)) [ set pcolor green ]
+    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= 73) and (pycor / scale < 84)) [ set pcolor green ]
 
     ;statue
-    if (abs pycor / scale <= 6.25) and (abs pxcor / scale <= 5) [ set pcolor black ]
+    if (abs pycor / scale <= 6.25) and (abs pxcor / scale <= 5) [ set pcolor gray ]
 
     ;outside
     if (abs pycor / scale > 84 + wall-thickness) or (abs pxcor / scale > 38 + wall-thickness) [ set pcolor blue ]
@@ -102,8 +101,9 @@ to setup
   draw_map_SC
   ;spawn people
   create-people population [
-    set color green
-    set shape "person"
+    set color red
+    set shape "arrow"
+    set size 5
     set aware false
     set escaping false
     set evacuated false
@@ -113,13 +113,13 @@ to setup
     move-to one-of patches with [pcolor = white]
   ]
   set alarm? false
-  set num_evacuated 0
-  set  max_people_on_patch 3
+  set  max_people_on_patch 10
   set level1 5
   set level2 7
   set level3 9
   ;set time_of_evacuation 0
-  ask n-of (round aware_fraction / 100 * population) people [set aware true]
+  ask n-of (round aware_fraction / 100 * population) people [set aware true
+                                                            set color green]
 
 end
 
@@ -136,12 +136,11 @@ to start_simulation
     ;end of evacuation
   if (count people = 0 and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
-  if(alarm? = true) [ask people [set escaping true]]
   ask people with [escaping][
     move_person
     update_people_status
   ]
-  if (population = num_evacuated) [stop]
+  ;if (population = num_evacuated) [stop]
   ask patches [set num_people count people-here]
   tick
 end
@@ -150,43 +149,66 @@ end
 to start_evacuation
 set alarm? true
 ask people [
+    set escaping true
       ifelse(aware = true)
         [set destination min-one-of patches with [pcolor = green] [distance myself]]
-        [set destination one-of (patches with [pcolor = green])]
+        [set destination one-of patches with [pcolor = green]]
+    face destination
 ]
 end
 
 ;move input person towards his/her dest
 to move_person;[to_move]
   if evacuated [die]
-  face destination
+  ;face destination
   (ifelse
     [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
 
     [pcolor = white and num_people >= max_people_on_patch] of patch-ahead 1
     [
-      if any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
-      [
-        face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
+        ;face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
+        face min-one-of neighbors with [(pcolor = white)][distance [destination] of myself]
         forward 1
-      ]
+        face destination
     ]
-    [pcolor = green  and num_people < max_people_on_patch] of patch-ahead 1  [
+    [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
       forward 1
-      set num_evacuated num_evacuated + 1
       set evacuated true
     ]
 
-    ;[pcolor = green and num_people >= max_people_on_patch] of patch-ahead 1
-    ;[
-     ; set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
-    ;]
-    [pcolor] of patch-ahead 1 = black
+    [pcolor = green and num_people >= max_people_on_patch] of patch-ahead 1
     [
-      move-to min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
-      ;[distance min-one-of patches with [pcolor = green]
-    ]; should be distance from destination
-    ;[pcolor] of patch-ahead 1 = black [set destination one-of (patches with [pcolor = green])]
+     set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
+     if any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
+      [
+        face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
+        forward 1
+        face destination
+      ]
+    ]
+    [pcolor] of patch-ahead 1 = black
+    [(ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
+      [
+        face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
+        forward 1
+        set evacuated true
+      ]
+      any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
+       [
+        face min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
+        forward 1
+        face destination
+      ]
+      [set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch][distance [destination] of myself]]
+      )
+    ]
+    [pcolor = gray] of patch-ahead 1
+     [
+      set destination one-of (patches with [pcolor = green])
+      face destination
+      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
+     ]
+
   )
 end
 
@@ -287,7 +309,7 @@ INPUTBOX
 111
 308
 population
-10000.0
+50.0
 1
 0
 Number
@@ -352,7 +374,7 @@ aware_fraction
 aware_fraction
 0
 100
-18.0
+2.0
 1
 1
 NIL
@@ -364,7 +386,7 @@ MONITOR
 782
 56
 Evacuated
-num_evacuated
+population - count people
 17
 1
 11
