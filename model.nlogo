@@ -22,6 +22,7 @@ people-own[
   evacuated;T/F
   escaping; T/F
   dead; T/F
+  moved;
 ]
 
 ;square meter class
@@ -101,14 +102,15 @@ to setup
   draw_map_SC
   ;spawn people
   create-people population [
-    set color green
+    set color rgb 0 255 0
     set shape "arrow"
-    set size 5
+    set size 1
     set aware false
     set escaping false
     set evacuated false
     set dead false
-    set health_state 10
+    set moved false
+    set health_state 100
     ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
@@ -128,16 +130,22 @@ to start_simulation
   if (alarm? = false)
   [
     ask people [
+      set moved false
       facexy random-xcor random-ycor
-      if [pcolor] of patch-ahead 1 = white [forward 1]
+      if [pcolor] of patch-ahead 1 = white [forward 1 set moved true]
     ]
   ]
     ;end of evacuation
-  if (count people = 0 and alarm? = true) [set alarm? false stop]
+;  print word "people" count people
+;  print word "victims" count people with [health_state = 0]
+  if ((count people) = (count people with [dead]) and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
   ask people with [escaping = true and health_state > 0][
-    move_person
     update_people_status
+    if not dead [
+      set moved false
+      move_person
+    ]
   ]
   ;if (population = num_evacuated) [stop]
   ask patches [set num_people count people-here]
@@ -175,17 +183,19 @@ to move_person;[to_move]
 
 
   (ifelse
-    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
+    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1 set moved true]
 
     [pcolor = white and num_people >= max_people_on_patch] of patch-ahead 1
     [
         ;face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
         face min-one-of neighbors with [(pcolor = white)][distance [destination] of myself]
         forward 1
+        set moved true
         face destination
     ]
     [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
       forward 1
+      set moved true
       set evacuated true
     ]
 
@@ -196,6 +206,7 @@ to move_person;[to_move]
       [
         face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
         forward 1
+        set moved true
         face destination
       ]
     ]
@@ -204,12 +215,14 @@ to move_person;[to_move]
       [
         face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
         forward 1
+        set moved true
         set evacuated true
       ]
       any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
        [
         face min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
         forward 1
+        set moved true
         face destination
       ]
       [set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch][distance [destination] of myself]]
@@ -219,35 +232,52 @@ to move_person;[to_move]
      [
       set destination one-of (patches with [pcolor = green])
       face destination
-      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
+      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1 set moved true]
      ]
 
   )
+  ; escaping procedure if stuck
+  if not moved and not dead [
+    move-to one-of neighbors with [pcolor = white]
+    face destination
+    set moved true
+  ]
+
+
 end
 
 ;update health, evacuated, speed
 to update_people_status
    ; get number of people on patch
    let n count turtles-on patch-here
+
+   set health_state health_state - (health_state * n / 100)
    ; update health based on crowdness
-   if (n >= level1) and (n < level2) [set health_state health_state - 1]
-   if (n >= level2) and (n < level3) [set health_state health_state - 2]
-   if n >= level3 [set health_state health_state - 3]
-   ; die
-   if health_state = 0 [set dead true]
-   ; change color
-   if (health_state <= 10) and (health_state >= 8) [set color green]
-   if (health_state < 8) and (health_state >= 5) [set color yellow]
-   if (health_state < 5) and (health_state >= 1) [set color orange]
-   if health_state = 0 [set color red]
+;   if (n >= level1) and (n < level2) [set health_state health_state - 1]
+;   if (n >= level2) and (n < level3) [set health_state health_state - 2]
+;   if n >= level3 [set health_state health_state - 3]
+   if health_state < 0 [set health_state 0]
+;   ; die
+;   if health_state = 0 [set dead true]
+;   ; change color
+;   if (health_state <= 10) and (health_state >= 8) [set color green]
+;   if (health_state < 8) and (health_state >= 5) [set color yellow]
+;   if (health_state < 5) and (health_state >= 1) [set color orange]
+;   if health_state = 0 [set color red]
+;
+   let injury_level get_injury_level
+   if injury_level = 6 [set dead true set color rgb 255 0 0]  ;fatal
+   if injury_level = 5 [set color rgb 255 102 0]              ;critical
+   if injury_level = 4 [set color rgb 255 204 0]              ;severe
+   if injury_level = 3 [set color rgb 0 153 255]              ;serious
+   if injury_level = 2 [set color rgb 0 255 255]              ;moderate
+   if injury_level = 1 [set color rgb 153 255 102]            ;minor
+   if injury_level = 0 [set color rgb 0 255 0]                ;healthy
 end
 
-;check if simulation should go on or end
-to check_evacuation_status
-
-
-
-
+; return the level of injury based on the health state (https://en.wikipedia.org/wiki/Abbreviated_Injury_Scale)
+to-report get_injury_level
+  report 6 - floor health_state / 15
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -276,23 +306,6 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
-
-BUTTON
-4
-10
-110
-58
-setup map
-import_map
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
 
 INPUTBOX
 7
@@ -387,7 +400,7 @@ aware_fraction
 aware_fraction
 0
 100
-100.0
+50.0
 1
 1
 NIL
@@ -438,10 +451,13 @@ true
 true
 "" ""
 PENS
-"healthy" 1.0 0 -11085214 true "" "plot count turtles with [color = green]"
-"injured" 1.0 0 -817084 true "" "plot count turtles with [color = orange]"
-"slightly injured" 1.0 0 -11221820 true "" "plot count turtles with [color = yellow]"
-"dead" 1.0 0 -2674135 true "" "plot count turtles with [color = red]"
+"healthy" 1.0 0 -11085214 true "" "plot count turtles with [color = rgb 0 255 0]"
+"minor" 1.0 0 -5509967 true "" "plot count turtles with [color = rgb 153 255 102]"
+"moderate" 1.0 0 -11221820 true "" "plot count turtles with [color = rgb 0 255 255]"
+"serious" 1.0 0 -14454117 true "" "plot count turtles with [color = rgb 0 153 255]"
+"severe" 1.0 0 -1184463 true "" "plot count turtles with [color = rgb 255 204 0]"
+"critical" 1.0 0 -955883 true "" "plot count turtles with [color = rgb 255 102 0]"
+"fatal" 1.0 0 -2674135 true "" "plot count turtles with [color = rgb 255 0 0]"
 
 @#$#@#$#@
 ## WHAT IS IT?
