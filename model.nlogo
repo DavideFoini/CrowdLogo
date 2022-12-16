@@ -22,6 +22,7 @@ people-own[
   evacuated;T/F
   escaping; T/F
   dead; T/F
+  moved;
 ]
 
 ;square meter class
@@ -108,6 +109,7 @@ to setup
     set escaping false
     set evacuated false
     set dead false
+    set moved false
     set health_state 10
     ;TODO add people setup
     move-to one-of patches with [pcolor = white]
@@ -128,18 +130,22 @@ to start_simulation
   if (alarm? = false)
   [
     ask people [
+      set moved false
       facexy random-xcor random-ycor
-      if [pcolor] of patch-ahead 1 = white [forward 1]
+      if [pcolor] of patch-ahead 1 = white [forward 1 set moved true]
     ]
   ]
     ;end of evacuation
 ;  print word "people" count people
 ;  print word "victims" count people with [health_state = 0]
-  if ((count people) = (count people with [health_state = 0]) and alarm? = true) [set alarm? false stop]
+  if ((count people) = (count people with [health_state <= 0]) and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
-  ask people with [escaping and health_state > 0][
-    move_person
+  ask people with [escaping][
     update_people_status
+    if not dead [
+      set moved false
+      move_person
+    ]
   ]
   ;if (population = num_evacuated) [stop]
   ask patches [set num_people count people-here]
@@ -163,17 +169,19 @@ to move_person;[to_move]
   if evacuated [die]
   ;face destination
   (ifelse
-    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
+    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1 set moved true]
 
     [pcolor = white and num_people >= max_people_on_patch] of patch-ahead 1
     [
         ;face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
         face min-one-of neighbors with [(pcolor = white)][distance [destination] of myself]
         forward 1
+        set moved true
         face destination
     ]
     [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
       forward 1
+      set moved true
       set evacuated true
     ]
 
@@ -184,6 +192,7 @@ to move_person;[to_move]
       [
         face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
         forward 1
+        set moved true
         face destination
       ]
     ]
@@ -192,12 +201,14 @@ to move_person;[to_move]
       [
         face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
         forward 1
+        set moved true
         set evacuated true
       ]
       any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
        [
         face min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
         forward 1
+        set moved true
         face destination
       ]
       [set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch][distance [destination] of myself]]
@@ -207,10 +218,18 @@ to move_person;[to_move]
      [
       set destination one-of (patches with [pcolor = green])
       face destination
-      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
+      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1 set moved true]
      ]
 
   )
+  ; escaping procedure if stuck
+  if not moved and not dead [
+    move-to one-of neighbors with [pcolor = white]
+    face destination
+    set moved true
+  ]
+
+
 end
 
 ;update health, evacuated, speed
@@ -222,12 +241,12 @@ to update_people_status
    if (n >= level2) and (n < level3) [set health_state health_state - 2]
    if n >= level3 [set health_state health_state - 3]
    ; die
-   if health_state = 0 [set dead true]
+   if health_state <= 0 [set dead true]
    ; change color
    if (health_state <= 10) and (health_state >= 8) [set color green]
    if (health_state < 8) and (health_state >= 5) [set color yellow]
    if (health_state < 5) and (health_state >= 1) [set color orange]
-   if health_state = 0 [set color red]
+   if health_state <= 0 [set color red]
 end
 
 ;check if simulation should go on or end
