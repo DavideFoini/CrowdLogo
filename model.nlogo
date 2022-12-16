@@ -110,7 +110,7 @@ to setup
     set evacuated false
     set dead false
     set moved false
-    set health_state 10
+    set health_state 100
     ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
@@ -236,25 +236,34 @@ end
 to update_people_status
    ; get number of people on patch
    let n count turtles-on patch-here
+
+   set health_state health_state - (health_state * n / 100)
    ; update health based on crowdness
-   if (n >= level1) and (n < level2) [set health_state health_state - 1]
-   if (n >= level2) and (n < level3) [set health_state health_state - 2]
-   if n >= level3 [set health_state health_state - 3]
-   ; die
-   if health_state <= 0 [set dead true]
-   ; change color
-   if (health_state <= 10) and (health_state >= 8) [set color green]
-   if (health_state < 8) and (health_state >= 5) [set color yellow]
-   if (health_state < 5) and (health_state >= 1) [set color orange]
-   if health_state <= 0 [set color red]
+;   if (n >= level1) and (n < level2) [set health_state health_state - 1]
+;   if (n >= level2) and (n < level3) [set health_state health_state - 2]
+;   if n >= level3 [set health_state health_state - 3]
+   if health_state < 0 [set health_state 0]
+;   ; die
+;   if health_state = 0 [set dead true]
+;   ; change color
+;   if (health_state <= 10) and (health_state >= 8) [set color green]
+;   if (health_state < 8) and (health_state >= 5) [set color yellow]
+;   if (health_state < 5) and (health_state >= 1) [set color orange]
+;   if health_state = 0 [set color red]
+;
+   let injury_level get_injury_level
+   if injury_level = 6 [set dead true set color rgb 255 0 0]  ;fatal
+   if injury_level = 5 [set color rgb 255 102 0]              ;critical
+   if injury_level = 4 [set color rgb 255 204 0]              ;severe
+   if injury_level = 3 [set color rgb 0 153 255]              ;serious
+   if injury_level = 2 [set color rgb 0 255 255]              ;moderate
+   if injury_level = 1 [set color rgb 153 255 102]            ;minor
+   if injury_level = 0 [set color rgb 0 255 0]                ;healthy
 end
 
-;check if simulation should go on or end
-to check_evacuation_status
-
-
-
-
+; return the level of injury based on the health state (https://en.wikipedia.org/wiki/Abbreviated_Injury_Scale)
+to-report get_injury_level
+  report 6 - floor health_state / 15
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -283,23 +292,6 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
-
-BUTTON
-4
-10
-110
-58
-setup map
-import_map
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
 
 INPUTBOX
 7
