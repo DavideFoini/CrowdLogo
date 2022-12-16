@@ -102,9 +102,9 @@ to setup
   draw_map_SC
   ;spawn people
   create-people population [
-    set color green
+    set color rgb 0 255 0
     set shape "arrow"
-    set size 5
+    set size 1
     set aware false
     set escaping false
     set evacuated false
@@ -138,7 +138,7 @@ to start_simulation
     ;end of evacuation
 ;  print word "people" count people
 ;  print word "victims" count people with [health_state = 0]
-  if ((count people) = (count people with [health_state <= 0]) and alarm? = true) [set alarm? false stop]
+  if ((count people) = (count people with [dead]) and alarm? = true) [set alarm? false stop]
   ;set escaping true to everyone
   ask people with [escaping][
     update_people_status
@@ -437,10 +437,13 @@ true
 true
 "" ""
 PENS
-"healthy" 1.0 0 -11085214 true "" "plot count turtles with [color = green]"
-"injured" 1.0 0 -817084 true "" "plot count turtles with [color = orange]"
-"slightly injured" 1.0 0 -11221820 true "" "plot count turtles with [color = yellow]"
-"dead" 1.0 0 -2674135 true "" "plot count turtles with [color = red]"
+"healthy" 1.0 0 -11085214 true "" "plot count turtles with [color = rgb 0 255 0]"
+"minor" 1.0 0 -5509967 true "" "plot count turtles with [color = rgb 153 255 102]"
+"moderate" 1.0 0 -11221820 true "" "plot count turtles with [color = rgb 0 255 255]"
+"serious" 1.0 0 -14454117 true "" "plot count turtles with [color = rgb 0 153 255]"
+"severe" 1.0 0 -1184463 true "" "plot count turtles with [color = rgb 255 204 0]"
+"critical" 1.0 0 -955883 true "" "plot count turtles with [color = rgb 255 102 0]"
+"fatal" 1.0 0 -2674135 true "" "plot count turtles with [color = rgb 255 0 0]"
 
 @#$#@#$#@
 ## WHAT IS IT?
