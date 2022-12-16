@@ -387,6 +387,27 @@ false
 PENS
 "evacuation speed" 1.0 0 -13840069 true "" "plot count people with [evacuated]"
 
+PLOT
+728
+82
+1137
+300
+health_status
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"healthy" 1.0 0 -11085214 true "" "plot count turtles with [color = green]"
+"injured" 1.0 0 -817084 true "" "plot count turtles with [color = orange]"
+"slightly injured" 1.0 0 -11221820 true "" "plot count turtles with [color = yellow]"
+"dead" 1.0 0 -2674135 true "" "plot count turtles with [color = red]"
+
 @#$#@#$#@
 ## WHAT IS IT?
 
