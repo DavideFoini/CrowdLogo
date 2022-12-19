@@ -108,7 +108,7 @@ to setup
   create-people population [
     set color rgb 0 255 0
     set shape "arrow"
-    set size 5
+    set size people_dim
     ;set decision_to_take true;
     ;set panic false
     ;set panic_percentage 0;
@@ -321,13 +321,13 @@ end
 ;end
 @#$#@#$#@
 GRAPHICS-WINDOW
-496
-10
-705
-420
+459
+16
+668
+426
 -1
 -1
-1.0
+1.23
 1
 10
 1
@@ -348,10 +348,10 @@ ticks
 30.0
 
 INPUTBOX
-7
-119
-111
-179
+225
+380
+329
+440
 scale
 2.0
 1
@@ -360,9 +360,9 @@ Number
 
 INPUTBOX
 7
-183
+380
 110
-243
+440
 wall-thickness
 0.0
 1
@@ -370,10 +370,10 @@ wall-thickness
 Number
 
 INPUTBOX
-6
-248
-111
-308
+182
+118
+287
+178
 population
 1000.0
 1
@@ -381,11 +381,11 @@ population
 Number
 
 BUTTON
-115
+0
 10
-196
+81
 57
-NIL
+SETUP
 setup
 NIL
 1
@@ -398,11 +398,11 @@ NIL
 1
 
 BUTTON
-366
-10
-490
-43
-NIL
+0
+62
+165
+95
+START SIMULATION
 start_simulation
 T
 1
@@ -415,11 +415,11 @@ NIL
 1
 
 BUTTON
-13
-70
-77
-103
-alarm
+85
+10
+166
+57
+ALARM
 start_evacuation
 NIL
 1
@@ -432,10 +432,10 @@ NIL
 1
 
 SLIDER
-111
-70
-283
-103
+3
+118
+175
+151
 aware_fraction
 aware_fraction
 0
@@ -447,10 +447,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-719
-11
-782
-56
+760
+10
+823
+55
 Evacuated
 population - count people
 17
@@ -458,10 +458,10 @@ population - count people
 11
 
 PLOT
-133
-162
-483
-312
+841
+223
+1248
+431
 Evacuation speed
 time
 evacuated
@@ -473,14 +473,14 @@ true
 false
 "" ""
 PENS
-"evacuation speed" 1.0 0 -13840069 true "" "plot count people with [evacuated]"
+"evacuation speed" 1.0 0 -13840069 true "" "if alarm? = true [plot count people with [evacuated]]"
 
 PLOT
-728
-82
-1137
-300
-health_status
+841
+10
+1250
+217
+Health Status
 NIL
 NIL
 0.0
@@ -491,19 +491,19 @@ true
 true
 "" ""
 PENS
-"healthy" 1.0 0 -11085214 true "" "plot count turtles with [color = rgb 0 255 0]"
-"minor" 1.0 0 -5509967 true "" "plot count turtles with [color = rgb 153 255 102]"
-"moderate" 1.0 0 -11221820 true "" "plot count turtles with [color = rgb 0 255 255]"
-"serious" 1.0 0 -14454117 true "" "plot count turtles with [color = rgb 0 153 255]"
-"severe" 1.0 0 -1184463 true "" "plot count turtles with [color = rgb 255 204 0]"
-"critical" 1.0 0 -955883 true "" "plot count turtles with [color = rgb 255 102 0]"
-"fatal" 1.0 0 -2674135 true "" "plot count turtles with [color = rgb 255 0 0]"
+"healthy" 1.0 0 -11085214 true "" "if alarm? = true [plot count turtles with [color = rgb 0 255 0]]"
+"minor" 1.0 0 -5509967 true "" "if alarm? = true [plot count turtles with [color = rgb 153 255 102]]"
+"moderate" 1.0 0 -11221820 true "" "if alarm? = true [plot count turtles with [color = rgb 0 255 255]]"
+"serious" 1.0 0 -14454117 true "" "if alarm? = true [plot count turtles with [color = rgb 0 153 255]]"
+"severe" 1.0 0 -1184463 true "" "if alarm? = true [plot count turtles with [color = rgb 255 204 0]]"
+"critical" 1.0 0 -955883 true "" "if alarm? = true [plot count turtles with [color = rgb 255 102 0]]"
+"fatal" 1.0 0 -2674135 true "" "if alarm? = true [plot count turtles with [color = rgb 255 0 0]]"
 
 SLIDER
-303
-70
-475
-103
+3
+153
+175
+186
 panic_fraction
 panic_fraction
 0
@@ -513,6 +513,27 @@ panic_fraction
 1
 NIL
 HORIZONTAL
+
+TEXTBOX
+119
+359
+220
+377
+DEBUG VARIABLES
+11
+74.0
+0
+
+INPUTBOX
+114
+380
+220
+440
+people_dim
+1.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
