@@ -26,7 +26,6 @@ people-own[
   evacuated;T/F
   escaping; T/F
   dead; T/F
-  moved;
 ]
 
 ;square meter class
@@ -116,7 +115,6 @@ to setup
     set escaping false
     set evacuated false
     set dead false
-    set moved false
     set health_state 100
     ;TODO add people setup
     move-to one-of patches with [pcolor = white]
@@ -139,7 +137,6 @@ to start_simulation
   if (alarm? = false)
   [
     ask people [
-      set moved false
       let items ["left" "right"]
       let probabilities [0.5 0.5]
       let pairs (map list items probabilities)
@@ -147,7 +144,7 @@ to start_simulation
       ifelse (direction_to_go = "right")
       [right random 45]
       [left random 45]
-      if [pcolor] of patch-ahead 1 = white [forward 1 set moved true]
+      if [pcolor] of patch-ahead 1 = white [forward 1]
     ]
   ]
     ;end of evacuation
@@ -159,7 +156,6 @@ to start_simulation
   ][
     update_people_status
     if not dead [
-      set moved false
       move_person
     ]
   ]
@@ -217,19 +213,17 @@ to move_person;[to_move]
 
 
   (ifelse
-    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1 set moved true]
+    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
 
     [pcolor = white and num_people >= max_people_on_patch] of patch-ahead 1
     [
         ;face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
         face min-one-of neighbors with [(pcolor = white)][distance [destination] of myself]
         forward 1
-        set moved true
         face destination
     ]
     [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
       forward 1
-      set moved true
       set evacuated true
     ]
 
@@ -240,7 +234,6 @@ to move_person;[to_move]
       [
         face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
         forward 1
-        set moved true
         face destination
       ]
     ]
@@ -249,14 +242,12 @@ to move_person;[to_move]
       [
         face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
         forward 1
-        set moved true
         set evacuated true
       ]
       any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
        [
         face min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
         forward 1
-        set moved true
         face destination
       ]
       [set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch][distance [destination] of myself]]
@@ -266,16 +257,10 @@ to move_person;[to_move]
      [
       set destination one-of (patches with [pcolor = green])
       face destination
-      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1 set moved true]
+      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
      ]
 
   )
-  ; escaping procedure if stuck
-  if not moved and not dead [
-    move-to one-of neighbors with [pcolor = white]
-    face destination
-    set moved true
-  ]
 
 
 end
@@ -323,8 +308,8 @@ end
 GRAPHICS-WINDOW
 459
 16
-668
-426
+714
+518
 -1
 -1
 1.23
@@ -530,7 +515,7 @@ INPUTBOX
 220
 440
 people_dim
-1.0
+5.0
 1
 0
 Number
