@@ -68,6 +68,7 @@ end
 ;BLACK - wall
 ;BLUE - outside
 ;WHITE - inside
+;GREY - obstacle
 to draw_map_SC
   ;resize map
   resize-world -50 * scale 50 * scale -100 * scale 100 * scale
@@ -183,6 +184,8 @@ end
 ;start evacuation - also main loop
 to start_evacuation
 set alarm? true
+;start timer to measure evacuation time(s)
+reset-timer
   ask people[
     set escaping true
     ;ifelse (panic = false)[
@@ -225,6 +228,7 @@ to move_person;[to_move]
     [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
       forward 1
       set evacuated true
+      set evac_time timer
     ]
 
     [pcolor = green and num_people >= max_people_on_patch] of patch-ahead 1
@@ -243,6 +247,7 @@ to move_person;[to_move]
         face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
         forward 1
         set evacuated true
+        set evac_time timer
       ]
       any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
        [
@@ -270,7 +275,7 @@ to update_people_status
    ; get number of people on patch
    let n count turtles-on patch-here
 
-   set health_state health_state - (health_state * n / 100)
+  set health_state update_hs n
    ; update health based on crowdness
 ;   if (n >= level1) and (n < level2) [set health_state health_state - 1]
 ;   if (n >= level2) and (n < level3) [set health_state health_state - 2]
@@ -284,6 +289,7 @@ to update_people_status
 ;   if (health_state < 5) and (health_state >= 1) [set color orange]
 ;   if health_state = 0 [set color red]
 ;
+   ;get injury level and set color accordingly
    let injury_level get_injury_level
    if injury_level = 6 [set dead true set color rgb 255 0 0]  ;fatal
    if injury_level = 5 [set color rgb 255 102 0]              ;critical
@@ -299,6 +305,12 @@ to-report get_injury_level
   report 6 - floor health_state / 15
 end
 
+; update health state - a possible implementation
+; descrease value by percentage value based on n (number of people in same patch)
+to-report update_hs [n]
+  report health_state - (health_state * n / 100)
+end
+
 ;if people are with panic >0 they will tend to randomly follow other people instead of looking for an exit
 ;to follow_crowd
   ;face max-one-of patches [num_people]
@@ -306,13 +318,13 @@ end
 ;end
 @#$#@#$#@
 GRAPHICS-WINDOW
-459
-16
-714
-518
+457
+10
+666
+420
 -1
 -1
-1.23
+1.0
 1
 10
 1
@@ -443,13 +455,13 @@ population - count people
 11
 
 PLOT
-841
-223
-1248
-431
+842
+157
+1249
+301
 Evacuation speed
 time
-evacuated
+NIL
 0.0
 10.0
 0.0
@@ -464,7 +476,7 @@ PLOT
 841
 10
 1250
-217
+154
 Health Status
 NIL
 NIL
@@ -519,6 +531,24 @@ people_dim
 1
 0
 Number
+
+PLOT
+842
+305
+1249
+450
+Evacuation time
+time
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"evacuation time" 1.0 0 -8630108 true "" "let evac_people people with [evacuated]\nif any? evac_people[\n   let m mean [evac_time] of evac_people\n   if m > 0 [plot m]\n]"
 
 @#$#@#$#@
 ## WHAT IS IT?
