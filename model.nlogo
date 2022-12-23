@@ -149,13 +149,14 @@ to start_simulation
       if [pcolor] of patch-ahead 1 = white [forward 1]
     ]
   ]
-    ;end of evacuation
-;  print word "people" count people
-;  print word "victims" count people with [health_state = 0]
+
+  ;check if evacuation should end
   if ((count people) = (count people with [dead]) and alarm? = true) [set alarm? false stop]
-  ;set escaping true to everyone
-  ask people with [escaping = true and health_state > 0 ;and ;panic = false;
-  ][
+
+  ;movement
+  ask people with [escaping = true and health_state > 0 ;and ;panic = false
+  ]
+  [
     update_people_status
     if not dead [
       move_person
@@ -177,17 +178,19 @@ to start_simulation
       ;[follow_crowd]
     ;]
   ;]
-  ;if (population = num_evacuated) [stop]
+
+  ;update patch attributes
   ask patches [set num_people count people-here]
+
   tick
 end
 
-;start evacuation - also main loop
+;set alarm true and people destination
 to start_evacuation
 set alarm? true
 ;start timer to measure evacuation time(s)
 reset-timer
-  ask people[
+ask people[
     set escaping true
     ;ifelse (panic = false)[
       ifelse(aware = true)
@@ -199,26 +202,34 @@ reset-timer
 end
 
 ;move input person towards his/her dest
-to move_person;[to_move]
+to move_person
+  ;if subject evacuated, remove it from the simulation
   if evacuated [die]
-  if any? neighbors with [(pcolor = green)][
-   (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
+
+  ;if near an exit
+  if any? neighbors with [(pcolor = green)]
+  [
+    ;if the gate patch is not overcrowded got there
+    (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
        [
         face min-one-of neighbors with [(pcolor = green) and num_people < max_people_on_patch][distance myself]
         forward 1
         set evacuated true
        ]
-      [
+       ;otherwise go to the nearest gate patch that is not overcrowded
+       [
         set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
         face destination
        ]
-       )
-      ]
+    )
+  ]
 
-
+  ;if exiting
   (ifelse
+    ;if the next patch is accessible go there
     [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
 
+    ;if next patch is overcrowded go the the nearest one that is not
     [pcolor = white and num_people >= max_people_on_patch] of patch-ahead 1
     [
         ;face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
@@ -226,12 +237,15 @@ to move_person;[to_move]
         forward 1
         face destination
     ]
+
+    ;if next patch is exit and accessible go there
     [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
       forward 1
       set evacuated true
       set evac_time timer
     ]
 
+    ;if next patch is exit and overcrowded change destination to one not overcrowded
     [pcolor = green and num_people >= max_people_on_patch] of patch-ahead 1
     [
      set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
@@ -242,23 +256,33 @@ to move_person;[to_move]
         face destination
       ]
     ]
+
+    ;if next patch is a wall
     [pcolor] of patch-ahead 1 = black
-    [(ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
+    [
+      ;if an exit nearby go there
+      (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
       [
         face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
         forward 1
         set evacuated true
         set evac_time timer
       ]
+
+      ;if a free patch nearby go there
       any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
-       [
+      [
         face min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
         forward 1
         face destination
       ]
+
+      ;change destination patch
       [set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch][distance [destination] of myself]]
       )
     ]
+
+    ;if next patch is obstacle change destination gate
     [pcolor = gray] of patch-ahead 1
      [
       set destination one-of (patches with [pcolor = green])
@@ -267,8 +291,6 @@ to move_person;[to_move]
      ]
 
   )
-
-
 end
 
 ;update health, evacuated, speed
@@ -317,13 +339,13 @@ end
 ; update speed based on injury level (TODO also on gender/age)
 to update_speed
   (
-   ifelse injury_level = 6 [set speed 0]  ;fatal
-          injury_level = 5 [set speed 1]  ;critical
-          injury_level = 4 [set speed 2]  ;severe
-          injury_level = 3 [set speed 3]  ;serious
-          injury_level = 2 [set speed 4]  ;moderate
-          injury_level = 1 [set speed 4.5];minor
-          injury_level = 0 [set speed 5]  ;healthy
+   ifelse injury_level = 6 [set speed 0]    ;fatal
+          injury_level = 5 [set speed 1]    ;critical
+          injury_level = 4 [set speed 2]    ;severe
+          injury_level = 3 [set speed 3]    ;serious
+          injury_level = 2 [set speed 4]    ;moderate
+          injury_level = 1 [set speed 4.5]  ;minor
+          injury_level = 0 [set speed 5]    ;healthy
   )
 end
 
