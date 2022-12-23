@@ -17,6 +17,7 @@ people-own[
   speed
   destination
   health_state
+  injury_level
   evac_time
   direction_to_go;
   ;decision_to_take; T/F default true is rational decision
@@ -290,25 +291,40 @@ to update_people_status
 ;   if health_state = 0 [set color red]
 ;
    ;get injury level and set color accordingly
-   let injury_level get_injury_level
-   if injury_level = 6 [set dead true set color rgb 255 0 0]  ;fatal
-   if injury_level = 5 [set color rgb 255 102 0]              ;critical
-   if injury_level = 4 [set color rgb 255 204 0]              ;severe
-   if injury_level = 3 [set color rgb 0 153 255]              ;serious
-   if injury_level = 2 [set color rgb 0 255 255]              ;moderate
-   if injury_level = 1 [set color rgb 153 255 102]            ;minor
-   if injury_level = 0 [set color rgb 0 255 0]                ;healthy
+   update_injury_level
+   (
+     ifelse injury_level = 6 [set dead true set color rgb 255 0 0]  ;fatal
+            injury_level = 5 [set color rgb 255 102 0]              ;critical
+            injury_level = 4 [set color rgb 255 204 0]              ;severe
+            injury_level = 3 [set color rgb 0 153 255]              ;serious
+            injury_level = 2 [set color rgb 0 255 255]              ;moderate
+            injury_level = 1 [set color rgb 153 255 102]            ;minor
+            injury_level = 0 [set color rgb 0 255 0]                ;healthy
+   )
 end
 
 ; return the level of injury based on the health state (https://en.wikipedia.org/wiki/Abbreviated_Injury_Scale)
-to-report get_injury_level
-  report 6 - floor health_state / 15
+to update_injury_level
+  set injury_level 6 - floor health_state / 15
 end
 
 ; update health state - a possible implementation
 ; descrease value by percentage value based on n (number of people in same patch)
 to-report update_hs [n]
   report health_state - (health_state * n / 100)
+end
+
+; update speed based on injury level (TODO also on gender/age)
+to update_speed
+  (
+   ifelse injury_level = 6 [set speed 0]  ;fatal
+          injury_level = 5 [set speed 1]  ;critical
+          injury_level = 4 [set speed 2]  ;severe
+          injury_level = 3 [set speed 3]  ;serious
+          injury_level = 2 [set speed 4]  ;moderate
+          injury_level = 1 [set speed 4.5];minor
+          injury_level = 0 [set speed 5]  ;healthy
+  )
 end
 
 ;if people are with panic >0 they will tend to randomly follow other people instead of looking for an exit
