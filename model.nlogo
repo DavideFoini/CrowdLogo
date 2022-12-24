@@ -543,18 +543,18 @@ NIL
 0.0
 10.0
 0.0
-10.0
-true
+1.1
+false
 true
 "" ""
 PENS
-"healthy" 1.0 0 -11085214 true "" "if alarm? = true [plot count turtles with [color = rgb 0 255 0]]"
-"minor" 1.0 0 -5509967 true "" "if alarm? = true [plot count turtles with [color = rgb 153 255 102]]"
-"moderate" 1.0 0 -11221820 true "" "if alarm? = true [plot count turtles with [color = rgb 0 255 255]]"
-"serious" 1.0 0 -14454117 true "" "if alarm? = true [plot count turtles with [color = rgb 0 153 255]]"
-"severe" 1.0 0 -1184463 true "" "if alarm? = true [plot count turtles with [color = rgb 255 204 0]]"
-"critical" 1.0 0 -955883 true "" "if alarm? = true [plot count turtles with [color = rgb 255 102 0]]"
-"fatal" 1.0 0 -2674135 true "" "if alarm? = true [plot count turtles with [color = rgb 255 0 0]]"
+"healthy" 1.0 0 -11085214 true "" "let n count people\nif alarm? = true [plot count turtles with [color = rgb 0 255 0] / count people]"
+"minor" 1.0 0 -5509967 true "" "if alarm? = true [plot count turtles with [color = rgb 153 255 102] / count people]"
+"moderate" 1.0 0 -11221820 true "" "if alarm? = true [plot count turtles with [color = rgb 0 255 255] / count people]"
+"serious" 1.0 0 -14454117 true "" "if alarm? = true [plot count turtles with [color = rgb 0 153 255] / count people]"
+"severe" 1.0 0 -1184463 true "" "if alarm? = true [plot count turtles with [color = rgb 255 204 0] / count people]"
+"critical" 1.0 0 -955883 true "" "if alarm? = true [plot count turtles with [color = rgb 255 102 0] / count people]"
+"fatal" 1.0 0 -2674135 true "" "if alarm? = true [plot count turtles with [color = rgb 255 0 0] / count people]"
 
 SLIDER
 3
