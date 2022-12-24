@@ -337,7 +337,8 @@ end
 ; update health state - a possible implementation
 ; descrease value by percentage value based on n (number of people in same patch)
 to-report update_hs [n]
-  report health_state - (health_state * (n - 1) / 100)
+  ;report health_state - (health_state * (n - 1) / 100)
+  report health_state - ((n - 1) * injury_weight)
 end
 
 ; update speed based on injury level (TODO also on gender/age)
@@ -425,7 +426,7 @@ INPUTBOX
 287
 178
 population
-1000.0
+30000.0
 1
 0
 Number
@@ -490,7 +491,7 @@ aware_fraction
 aware_fraction
 0
 100
-53.0
+50.0
 1
 1
 NIL
@@ -580,7 +581,7 @@ INPUTBOX
 220
 440
 people_dim
-2.0
+0.75
 1
 0
 Number
@@ -613,6 +614,28 @@ speed_enabled
 0
 1
 -1000
+
+MONITOR
+760
+59
+823
+104
+Victims
+count people with [dead]
+17
+1
+11
+
+INPUTBOX
+335
+416
+440
+476
+injury_weight
+0.1
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
