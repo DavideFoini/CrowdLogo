@@ -110,6 +110,7 @@ to setup
     set color rgb 0 255 0
     set shape "arrow"
     set size people_dim
+    set speed 1
     ;set decision_to_take true;
     ;set panic false
     ;set panic_percentage 0;
@@ -146,7 +147,7 @@ to start_simulation
       ifelse (direction_to_go = "right")
       [right random 45]
       [left random 45]
-      if [pcolor] of patch-ahead 1 = white [forward 1]
+      if [pcolor] of patch-ahead 1 = white [move_forward]
     ]
   ]
 
@@ -213,7 +214,7 @@ to move_person
     (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
        [
         face min-one-of neighbors with [(pcolor = green) and num_people < max_people_on_patch][distance myself]
-        forward 1
+        move_forward
         set evacuated true
        ]
        ;otherwise go to the nearest gate patch that is not overcrowded
@@ -227,20 +228,20 @@ to move_person
   ;if exiting
   (ifelse
     ;if the next patch is accessible go there
-    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
+    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [move_forward]
 
     ;if next patch is overcrowded go the the nearest one that is not
     [pcolor = white and num_people >= max_people_on_patch] of patch-ahead 1
     [
         ;face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
         face min-one-of neighbors with [(pcolor = white)][distance [destination] of myself]
-        forward 1
+        move_forward
         face destination
     ]
 
     ;if next patch is exit and accessible go there
     [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
-      forward 1
+      move_forward
       set evacuated true
       set evac_time timer
     ]
@@ -252,7 +253,7 @@ to move_person
      if any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
       [
         face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
-        forward 1
+        move_forward
         face destination
       ]
     ]
@@ -264,7 +265,7 @@ to move_person
       (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
       [
         face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
-        forward 1
+        move_forward
         set evacuated true
         set evac_time timer
       ]
@@ -273,7 +274,7 @@ to move_person
       any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
       [
         face min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
-        forward 1
+        move_forward
         face destination
       ]
 
@@ -287,7 +288,7 @@ to move_person
      [
       set destination one-of (patches with [pcolor = green])
       face destination
-      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
+      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [move_forward]
      ]
 
   )
@@ -323,6 +324,8 @@ to update_people_status
             injury_level = 1 [set color rgb 153 255 102]            ;minor
             injury_level = 0 [set color rgb 0 255 0]                ;healthy
    )
+
+  update_speed
 end
 
 ; return the level of injury based on the health state (https://en.wikipedia.org/wiki/Abbreviated_Injury_Scale)
@@ -333,7 +336,7 @@ end
 ; update health state - a possible implementation
 ; descrease value by percentage value based on n (number of people in same patch)
 to-report update_hs [n]
-  report health_state - (health_state * n / 100)
+  report health_state - (health_state * (n - 1) / 100)
 end
 
 ; update speed based on injury level (TODO also on gender/age)
@@ -349,16 +352,35 @@ to update_speed
   )
 end
 
+; move person forward of speed patches if possible, if there is a wall or an obstacle stop
+to move_forward
+  ifelse speed_enabled
+  [
+    let i 1
+    while[([pcolor] of patch-ahead 1 = white) and (i <= speed) and ([num_people] of patch-ahead 1 < max_people_on_patch)]
+    [
+      forward 1
+      set i i + 1
+      if i < speed
+      [
+        update_people_status
+        ask patch-here [set num_people count people-here]
+      ]
+    ]
+  ]
+  [ forward 1 ]
+end
+
 ;if people are with panic >0 they will tend to randomly follow other people instead of looking for an exit
 ;to follow_crowd
   ;face max-one-of patches [num_people]
-  ;forward 1
+  ;move_forward
 ;end
 @#$#@#$#@
 GRAPHICS-WINDOW
-457
+500
 10
-666
+709
 420
 -1
 -1
@@ -475,7 +497,7 @@ aware_fraction
 aware_fraction
 0
 100
-50.0
+53.0
 1
 1
 NIL
@@ -565,7 +587,7 @@ INPUTBOX
 220
 440
 people_dim
-5.0
+3.0
 1
 0
 Number
@@ -587,6 +609,17 @@ false
 "" ""
 PENS
 "evacuation time" 1.0 0 -8630108 true "" "let evac_people people with [evacuated]\nif any? evac_people[\n   let m mean [evac_time] of evac_people\n   if m > 0 [plot m]\n]"
+
+SWITCH
+335
+380
+462
+413
+speed_enabled
+speed_enabled
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
