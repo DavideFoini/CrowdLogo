@@ -5,6 +5,7 @@ breed[people person]
 
 globals [
   alarm?
+  people_left
   ;time_of_evacuation
   max_people_on_patch
   level1
@@ -147,7 +148,7 @@ to start_simulation
       ifelse (direction_to_go = "right")
       [right random 45]
       [left random 45]
-      if [pcolor] of patch-ahead 1 = white [move_forward]
+      if [pcolor] of patch-ahead 1 = white [forward 1]
     ]
   ]
 
@@ -160,7 +161,7 @@ to start_simulation
   [
     update_people_status
     if not dead [
-      move_person
+      move_forward
     ]
   ]
   ;ask people with [escaping = true and health_state > 0 and panic = true][
@@ -182,7 +183,7 @@ to start_simulation
 
   ;update patch attributes
   ask patches [set num_people count people-here]
-
+  set people_left count people
   tick
 end
 
@@ -214,7 +215,7 @@ to move_person
     (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
        [
         face min-one-of neighbors with [(pcolor = green) and num_people < max_people_on_patch][distance myself]
-        move_forward
+        forward 1
         set evacuated true
        ]
        ;otherwise go to the nearest gate patch that is not overcrowded
@@ -228,20 +229,20 @@ to move_person
   ;if exiting
   (ifelse
     ;if the next patch is accessible go there
-    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [move_forward]
+    [pcolor = white and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
 
     ;if next patch is overcrowded go the the nearest one that is not
     [pcolor = white and num_people >= max_people_on_patch] of patch-ahead 1
     [
         ;face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
         face min-one-of neighbors with [(pcolor = white)][distance [destination] of myself]
-        move_forward
+        forward 1
         face destination
     ]
 
     ;if next patch is exit and accessible go there
     [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
-      move_forward
+      forward 1
       set evacuated true
       set evac_time timer
     ]
@@ -253,7 +254,7 @@ to move_person
      if any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
       [
         face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
-        move_forward
+        forward 1
         face destination
       ]
     ]
@@ -265,7 +266,7 @@ to move_person
       (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
       [
         face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
-        move_forward
+        forward 1
         set evacuated true
         set evac_time timer
       ]
@@ -274,7 +275,7 @@ to move_person
       any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
       [
         face min-one-of neighbors with [pcolor = white] [distance [destination] of myself]
-        move_forward
+        forward 1
         face destination
       ]
 
@@ -288,7 +289,7 @@ to move_person
      [
       set destination one-of (patches with [pcolor = green])
       face destination
-      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [move_forward]
+      if  [(pcolor = white) and num_people < max_people_on_patch] of patch-ahead 1 [forward 1]
      ]
 
   )
@@ -354,21 +355,13 @@ end
 
 ; move person forward of speed patches if possible, if there is a wall or an obstacle stop
 to move_forward
-  ifelse speed_enabled
+  if speed_enabled [set speed 1]
+  let i 1
+  while[i <= speed]
   [
-    let i 1
-    while[([pcolor] of patch-ahead 1 = white) and (i <= speed) and ([num_people] of patch-ahead 1 < max_people_on_patch)]
-    [
-      forward 1
-      set i i + 1
-      if i < speed
-      [
-        update_people_status
-        ask patch-here [set num_people count people-here]
-      ]
-    ]
+    move_person
+    set i i + 1
   ]
-  [ forward 1 ]
 end
 
 ;if people are with panic >0 they will tend to randomly follow other people instead of looking for an exit
@@ -544,17 +537,17 @@ NIL
 10.0
 0.0
 1.1
-false
+true
 true
 "" ""
 PENS
-"healthy" 1.0 0 -11085214 true "" "let n count people\nif alarm? = true [plot count turtles with [color = rgb 0 255 0] / count people]"
-"minor" 1.0 0 -5509967 true "" "if alarm? = true [plot count turtles with [color = rgb 153 255 102] / count people]"
-"moderate" 1.0 0 -11221820 true "" "if alarm? = true [plot count turtles with [color = rgb 0 255 255] / count people]"
-"serious" 1.0 0 -14454117 true "" "if alarm? = true [plot count turtles with [color = rgb 0 153 255] / count people]"
-"severe" 1.0 0 -1184463 true "" "if alarm? = true [plot count turtles with [color = rgb 255 204 0] / count people]"
-"critical" 1.0 0 -955883 true "" "if alarm? = true [plot count turtles with [color = rgb 255 102 0] / count people]"
-"fatal" 1.0 0 -2674135 true "" "if alarm? = true [plot count turtles with [color = rgb 255 0 0] / count people]"
+"minor" 1.0 0 -5509967 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 153 255 102] / people_left]"
+"moderate" 1.0 0 -11221820 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 255 255] / people_left]"
+"serious" 1.0 0 -14454117 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 153 255] / people_left]"
+"severe" 1.0 0 -1184463 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 204 0] / people_left]"
+"critical" 1.0 0 -955883 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 102 0] / people_left]"
+"fatal" 1.0 0 -2674135 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 0 0] / people_left]"
+"healthy" 1.0 0 -11085214 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 255 0] / people_left]"
 
 SLIDER
 3
@@ -587,7 +580,7 @@ INPUTBOX
 220
 440
 people_dim
-3.0
+2.0
 1
 0
 Number
