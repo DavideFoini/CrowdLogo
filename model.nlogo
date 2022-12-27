@@ -8,6 +8,7 @@ globals [
   people_left
   ;time_of_evacuation
   max_people_on_patch
+  max_people_on_patch_exit
   level1
   level2
   level3
@@ -86,7 +87,7 @@ to draw_map_SC
     ;S EXIT
     if ((pycor / scale <= -84) and (pycor / scale >= -84 - wall-thickness) and (pxcor / scale <= 5.4) and (pxcor / scale >= -5.4)) [ set pcolor green ]
     ;N EXIT
-    if ((pycor / scale >= 84) and (pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) [ set pcolor green ]
+    if ((pycor / scale >= 84) and (pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) and (not real_exits)[ set pcolor green ]
     ;SE AND SW EXITS
     if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale > -84) and (pycor / scale <= -73)) [ set pcolor green ]
     ;NE AND NW EXITS
@@ -125,6 +126,7 @@ to setup
   ]
   set alarm? false
   set max_people_on_patch 10
+  ifelse real_exits[set max_people_on_patch_exit 10][set max_people_on_patch_exit 2]
   set level1 5
   set level2 7
   set level3 9
@@ -212,15 +214,15 @@ to move_person
   if any? neighbors with [(pcolor = green)]
   [
     ;if the gate patch is not overcrowded got there
-    (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
+    (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch_exit]
        [
-        face min-one-of neighbors with [(pcolor = green) and num_people < max_people_on_patch][distance myself]
+        face min-one-of neighbors with [(pcolor = green) and num_people < max_people_on_patch_exit][distance myself]
         forward 1
         set evacuated true
        ]
        ;otherwise go to the nearest gate patch that is not overcrowded
        [
-        set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
+        set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch_exit] [distance myself]
         face destination
        ]
     )
@@ -241,14 +243,14 @@ to move_person
     ]
 
     ;if next patch is exit and accessible go there
-    [pcolor = green and num_people < max_people_on_patch] of patch-ahead 1  [
+    [pcolor = green and num_people < max_people_on_patch_exit] of patch-ahead 1  [
       forward 1
       set evacuated true
       set evac_time timer
     ]
 
     ;if next patch is exit and overcrowded change destination to one not overcrowded
-    [pcolor = green and num_people >= max_people_on_patch] of patch-ahead 1
+    [pcolor = green and num_people >= max_people_on_patch_exit] of patch-ahead 1
     [
      set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
      if any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
@@ -280,7 +282,7 @@ to move_person
       ]
 
       ;change destination patch
-      [set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch][distance [destination] of myself]]
+      [set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch_exit][distance [destination] of myself]]
       )
     ]
 
@@ -331,7 +333,7 @@ end
 
 ; return the level of injury based on the health state (https://en.wikipedia.org/wiki/Abbreviated_Injury_Scale)
 to update_injury_level
-  set injury_level 6 - floor health_state / 15
+  set injury_level max list (6 - (floor health_state / 15)) 0
 end
 
 ; update health state - a possible implementation
@@ -399,10 +401,10 @@ ticks
 30.0
 
 INPUTBOX
-225
-380
-329
-440
+218
+246
+322
+306
 scale
 2.0
 1
@@ -410,10 +412,10 @@ scale
 Number
 
 INPUTBOX
-7
-380
-110
-440
+0
+246
+103
+306
 wall-thickness
 0.0
 1
@@ -426,7 +428,7 @@ INPUTBOX
 287
 178
 population
-30000.0
+100.0
 1
 0
 Number
@@ -491,7 +493,7 @@ aware_fraction
 aware_fraction
 0
 100
-50.0
+0.0
 1
 1
 NIL
@@ -566,22 +568,22 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-119
-359
-220
-377
+112
+225
+213
+243
 DEBUG VARIABLES
 11
 74.0
 0
 
 INPUTBOX
-114
-380
-220
-440
+107
+246
+213
+306
 people_dim
-0.75
+5.0
 1
 0
 Number
@@ -605,10 +607,10 @@ PENS
 "evacuation time" 1.0 0 -8630108 true "" "let evac_people people with [evacuated]\nif any? evac_people[\n   let m mean [evac_time] of evac_people\n   if m > 0 [plot m]\n]"
 
 SWITCH
-335
-380
-462
-413
+108
+344
+235
+377
 speed_enabled
 speed_enabled
 0
@@ -627,15 +629,26 @@ count people with [dead]
 11
 
 INPUTBOX
-335
-416
-440
-476
+0
+309
+105
+369
 injury_weight
 0.1
 1
 0
 Number
+
+SWITCH
+108
+309
+235
+342
+real_exits
+real_exits
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
