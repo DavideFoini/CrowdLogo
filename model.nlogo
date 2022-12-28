@@ -12,6 +12,13 @@ globals [
   level1
   level2
   level3
+  ;keep track of number of injured and what type of injury
+  il0
+  il1
+  il2
+  il3
+  il4
+  il5
 ]
 
 
@@ -124,9 +131,17 @@ to setup
     ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
+
+  set il0 0
+  set il1 0
+  set il2 0
+  set il3 0
+  set il4 0
+  set il5 0
+
   set alarm? false
   set max_people_on_patch 10
-  ifelse real_exits[set max_people_on_patch_exit 10][set max_people_on_patch_exit 2]
+  ifelse real_exits[set max_people_on_patch_exit max_people_on_patch][set max_people_on_patch_exit 2]
   set level1 5
   set level2 7
   set level3 9
@@ -208,7 +223,7 @@ end
 ;move input person towards his/her dest
 to move_person
   ;if subject evacuated, remove it from the simulation
-  if evacuated [die]
+  if evacuated [update_injury_output die]
 
   ;if near an exit
   if any? neighbors with [(pcolor = green)]
@@ -367,6 +382,18 @@ to move_forward
   ]
 end
 
+; update globals used to plot histogram of injury levels
+to update_injury_output
+  (
+   ifelse injury_level = 5 [set il5 il5 + 1]    ;critical
+          injury_level = 4 [set il4 il4 + 1]    ;severe
+          injury_level = 3 [set il3 il3 + 1]    ;serious
+          injury_level = 2 [set il2 il2 + 1]    ;moderate
+          injury_level = 1 [set il1 il1 + 1]    ;minor
+          injury_level = 0 [set il0 il0 + 1]    ;healthy
+  )
+end
+
 ;if people are with panic >0 they will tend to randomly follow other people instead of looking for an exit
 ;to follow_crowd
   ;face max-one-of patches [num_people]
@@ -387,8 +414,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
-1
+0
+0
 1
 -100
 100
@@ -428,7 +455,7 @@ INPUTBOX
 287
 178
 population
-100.0
+3000.0
 1
 0
 Number
@@ -493,7 +520,7 @@ aware_fraction
 aware_fraction
 0
 100
-0.0
+50.0
 1
 1
 NIL
@@ -583,7 +610,7 @@ INPUTBOX
 213
 306
 people_dim
-5.0
+0.75
 1
 0
 Number
@@ -618,11 +645,11 @@ speed_enabled
 -1000
 
 MONITOR
-760
-59
-823
-104
-Victims
+740
+386
+800
+431
+Fatal
 count people with [dead]
 17
 1
@@ -634,7 +661,7 @@ INPUTBOX
 105
 369
 injury_weight
-0.1
+2.0
 1
 0
 Number
@@ -649,6 +676,82 @@ real_exits
 0
 1
 -1000
+
+MONITOR
+740
+156
+799
+201
+Minor
+il1
+17
+1
+11
+
+MONITOR
+740
+202
+799
+247
+Moderate
+il2
+17
+1
+11
+
+MONITOR
+740
+248
+799
+293
+Serious
+il3
+17
+1
+11
+
+MONITOR
+740
+294
+799
+339
+Severe
+il4
+17
+1
+11
+
+MONITOR
+740
+340
+800
+385
+Critical
+il5
+17
+1
+11
+
+TEXTBOX
+732
+93
+812
+111
+INJURY LEVELS
+11
+0.0
+1
+
+MONITOR
+740
+110
+799
+155
+Healthy
+il0
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
