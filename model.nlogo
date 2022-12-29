@@ -177,20 +177,21 @@ to start_simulation
   [
     update_people_status
     if not dead [
-      move_person
+      move_forward
     ]
   ]
   ask people with [escaping = true and health_state > 0 and panic = true][
     update_people_status
     if not dead [
-      let items [ false true]
+      let items [false true]
       let p panic_percentage
       let probabilities list (p) (1 - p)
       let pairs (map list items probabilities)
       set decision_to_take first rnd:weighted-one-of-list pairs last
       ;if the decision_to_take is rational proceed as usual otherwise follow the crowd
-      ifelse (decision_to_take = true)[move_person]
-       [follow_crowd]
+      ifelse (decision_to_take = true)
+        [move_forward]
+        [follow_crowd]
     ]
   ]
 
@@ -217,6 +218,7 @@ ask people[
 end
 
 ;move input person towards his/her dest
+;DO NOT CALL THIS PROCEDURE DIRECTLY, USE MOVE_FORWARD
 to move_person
   ;if subject evacuated, remove it from the simulation
   if evacuated [update_injury_output die]
@@ -263,7 +265,7 @@ to move_person
     ;if next patch is exit and overcrowded change destination to one not overcrowded
     [pcolor = green and num_people >= max_people_on_patch_exit] of patch-ahead 1
     [
-     set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch] [distance myself]
+     set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch_exit] [distance myself]
      if any? neighbors with [(pcolor = white) and num_people < max_people_on_patch]
       [
         face min-one-of neighbors with [(pcolor = white) and num_people < max_people_on_patch][distance [destination] of myself]
@@ -276,7 +278,7 @@ to move_person
     [pcolor] of patch-ahead 1 = black
     [
       ;if an exit nearby go there
-      (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch]
+      (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch_exit]
       [
         face min-one-of neighbors with [pcolor = green] [distance [destination] of myself]
         forward 1
@@ -369,7 +371,7 @@ end
 
 ; move person forward of speed patches if possible, if there is a wall or an obstacle stop
 to move_forward
-  if speed_enabled [set speed 1]
+  if not speed_enabled [set speed 1]
   let i 1
   while[i <= speed]
   [
@@ -412,7 +414,7 @@ to follow_crowd
     )
   ]
 
-   [face max-one-of neighbors [num_people]
+   [face max-one-of neighbors with [pcolor = white] [num_people]
     forward 1]
   end
 @#$#@#$#@
@@ -471,7 +473,7 @@ INPUTBOX
 287
 178
 population
-300.0
+30000.0
 1
 0
 Number
@@ -604,7 +606,7 @@ panic_fraction
 panic_fraction
 0
 100
-24.0
+10.0
 1
 1
 NIL
@@ -626,7 +628,7 @@ INPUTBOX
 213
 306
 people_dim
-5.0
+0.75
 1
 0
 Number
@@ -677,7 +679,7 @@ INPUTBOX
 105
 369
 injury_weight
-2.0
+0.2
 1
 0
 Number
