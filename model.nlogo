@@ -372,8 +372,10 @@ end
 ; move person forward of speed patches if possible, if there is a wall or an obstacle stop
 to move_forward
   if not speed_enabled [set speed 1]
+  let slip false
+  if glass_bottles [set slip get_slip]
   let i 1
-  while[i <= speed]
+  while[(i <= speed) and (not slip)]
   [
     move_person
     set i i + 1
@@ -416,7 +418,15 @@ to follow_crowd
 
    [face max-one-of neighbors with [pcolor = white] [num_people]
     forward 1]
-  end
+end
+
+;slip with probability slippig_chance
+to-report get_slip
+  let p random 100
+  ifelse p <= slipping_chance
+    [report true]
+    [report false]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 500
@@ -658,7 +668,7 @@ SWITCH
 377
 speed_enabled
 speed_enabled
-0
+1
 1
 -1000
 
@@ -770,6 +780,32 @@ il0
 17
 1
 11
+
+SWITCH
+0
+398
+126
+431
+glass_bottles
+glass_bottles
+1
+1
+-1000
+
+SLIDER
+0
+437
+126
+470
+slipping_chance
+slipping_chance
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
