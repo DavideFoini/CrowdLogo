@@ -29,9 +29,9 @@ people-own[
   injury_level
   evac_time
   direction_to_go;
-  ;decision_to_take; T/F default true is rational decision
-  ;panic;T/F
-  ;panic_percentage; range (0,1]
+  decision_to_take; T/F default true is rational decision
+  panic;T/F
+  panic_percentage; range (0,1]
   aware ;T/F
   evacuated;T/F
   escaping; T/F
@@ -120,9 +120,9 @@ to setup
     set shape "arrow"
     set size people_dim
     set speed 1
-    ;set decision_to_take true;
-    ;set panic false
-    ;set panic_percentage 0;
+    set decision_to_take true;
+    set panic false
+    set panic_percentage 0;
     set aware false
     set escaping false
     set evacuated false
@@ -147,8 +147,8 @@ to setup
   set level3 9
   ;set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
-  ;ask n-of (round panic_fraction / 100 * population) people [set panic true]
-  ;ask people with [panic = true] [set panic_percentage random 10001 / 10000]; setting value in rage (0,1] if panic is present
+  ask n-of (round panic_fraction / 100 * population) people [set panic true]
+  ask people with [panic = true] [set panic_percentage random 10001 / 10000]; setting value in range (0,1] if panic is present
 
 end
 
@@ -173,30 +173,26 @@ to start_simulation
   if ((count people) = (count people with [dead]) and alarm? = true) [set alarm? false stop]
 
   ;movement
-  ask people with [escaping = true and health_state > 0 ;and ;panic = false
-  ]
+  ask people with [escaping = true and health_state > 0 and panic = false]
   [
     update_people_status
     if not dead [
-      move_forward
+      move_person
     ]
   ]
-  ;ask people with [escaping = true and health_state > 0 and panic = true][
-    ;update_people_status
-    ;if not dead [
-      ;set moved false
-      ;let items [ false true];
-      ;let p [panic_percentage] of people
-  ;let probabilities [0.5 0.5] but shoudl be let probabilities [panic_percentage 1 - panic_percentage]
-      ;let pairs (map list items probabilities)
-      ;set decision_to_take first rnd:weighted-one-of-list pairs last
-      ;ifelse (decision_to_take = true)
-      ;[
-       ;set moved false
-       ;move_person]
-      ;[follow_crowd]
-    ;]
-  ;]
+  ask people with [escaping = true and health_state > 0 and panic = true][
+    update_people_status
+    if not dead [
+      let items [ false true]
+      let p panic_percentage
+      let probabilities list (p) (1 - p)
+      let pairs (map list items probabilities)
+      set decision_to_take first rnd:weighted-one-of-list pairs last
+      ;if the decision_to_take is rational proceed as usual otherwise follow the crowd
+      ifelse (decision_to_take = true)[move_person]
+       [follow_crowd]
+    ]
+  ]
 
   ;update patch attributes
   ask patches [set num_people count people-here]
@@ -216,7 +212,7 @@ ask people[
         [set destination min-one-of patches with [pcolor = green] [distance myself]]
         [set destination one-of patches with [pcolor = green]]
       face destination]
-    ;[facexy random-xcor random-ycor]
+    ;[face max-one-of neighbors [num_people] ]; if panic is present people will face the neihbors with most people in
   ;]
 end
 
@@ -394,11 +390,31 @@ to update_injury_output
   )
 end
 
-;if people are with panic >0 they will tend to randomly follow other people instead of looking for an exit
-;to follow_crowd
-  ;face max-one-of patches [num_people]
-  ;move_forward
-;end
+;if people are with decision_to_take false ( i.e. not rational decision) they will tend to follow other people instead of looking for an exit
+to follow_crowd
+  if evacuated [update_injury_output die]
+  ;the following block is the same as move_person, based on the assumption that if an exit is close, rationality overcome panic
+  ;if near an exit
+  ifelse  any? neighbors with [(pcolor = green)]
+  [
+    ;if the gate patch is not overcrowded got there
+    (ifelse any? neighbors with [(pcolor = green) and num_people < max_people_on_patch_exit]
+       [
+        face min-one-of neighbors with [(pcolor = green) and num_people < max_people_on_patch_exit][distance myself]
+        forward 1
+        set evacuated true
+       ]
+       ;otherwise go to the nearest gate patch that is not overcrowded
+       [
+        set destination min-one-of patches with [pcolor = green and num_people < max_people_on_patch_exit] [distance myself]
+        face destination
+       ]
+    )
+  ]
+
+   [face max-one-of neighbors [num_people]
+    forward 1]
+  end
 @#$#@#$#@
 GRAPHICS-WINDOW
 500
@@ -455,7 +471,7 @@ INPUTBOX
 287
 178
 population
-3000.0
+300.0
 1
 0
 Number
@@ -588,7 +604,7 @@ panic_fraction
 panic_fraction
 0
 100
-50.0
+24.0
 1
 1
 NIL
@@ -610,7 +626,7 @@ INPUTBOX
 213
 306
 people_dim
-0.75
+5.0
 1
 0
 Number
