@@ -29,7 +29,7 @@ people-own[
   injury_level
   evac_time
   direction_to_go;
-  decision_to_take; T/F default true is rational decision
+  rational; T/F default true is rational decision
   panic;T/F
   panic_percentage; range (0,1]
   aware ;T/F
@@ -120,7 +120,7 @@ to setup
     set shape "arrow"
     set size people_dim
     set speed 1
-    set decision_to_take true;
+    set rational true;
     set panic false
     set panic_percentage 0;
     set aware false
@@ -187,10 +187,11 @@ to start_simulation
       let p panic_percentage
       let probabilities list (p) (1 - p)
       let pairs (map list items probabilities)
-      set decision_to_take first rnd:weighted-one-of-list pairs last
+      set rational first rnd:weighted-one-of-list pairs last
       ;if the decision_to_take is rational proceed as usual otherwise follow the crowd
-      ifelse (decision_to_take = true)
-        [move_forward]
+      ifelse (rational  = true)
+        [move_forward
+         set panic false]
         [follow_crowd]
     ]
   ]
@@ -213,7 +214,7 @@ ask people[
         [set destination min-one-of patches with [pcolor = green] [distance myself]]
         [set destination one-of patches with [pcolor = green]]
       face destination]
-    ;[face max-one-of neighbors [num_people] ]; if panic is present people will face the neihbors with most people in
+    ;[face max-one-of neighbors with [pcolor = white] [num_people] ]; if panic is present people will face the neihbors with most people in
   ;]
 end
 
@@ -483,7 +484,7 @@ INPUTBOX
 287
 178
 population
-30000.0
+300.0
 1
 0
 Number
@@ -616,7 +617,7 @@ panic_fraction
 panic_fraction
 0
 100
-10.0
+73.0
 1
 1
 NIL
@@ -638,7 +639,7 @@ INPUTBOX
 213
 306
 people_dim
-0.75
+10.0
 1
 0
 Number
