@@ -6,7 +6,7 @@ breed[people person]
 globals [
   alarm?
   people_left
-  ;time_of_evacuation
+  time_of_evacuation
   max_people_on_patch
   max_people_on_patch_exit
   level1
@@ -128,7 +128,6 @@ to setup
     set evacuated false
     set dead false
     set health_state 100
-    ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
 
@@ -145,7 +144,7 @@ to setup
   set level1 5
   set level2 7
   set level3 9
-  ;set time_of_evacuation 0
+  set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
   ask n-of (round panic_fraction / 100 * population) people [set panic true]
   ask people with [panic = true] [set panic_percentage random 10001 / 10000]; setting value in range (0,1] if panic is present
@@ -194,6 +193,9 @@ to start_simulation
         [follow_crowd]
     ]
   ]
+
+  ;update time of evacuation
+  if alarm? [set time_of_evacuation time_of_evacuation + 1]
 
   ;update patch attributes
   ask patches [set num_people count people-here]
@@ -374,6 +376,8 @@ to move_forward
   if not speed_enabled [set speed 1]
   let slip false
   if glass_bottles [set slip get_slip]
+  ; if slipping decrease health_state by 25%
+  if slip [set health_state health_state - (health_state / 4)]
   let i 1
   while[(i <= speed) and (not slip)]
   [
@@ -429,9 +433,9 @@ to-report get_slip
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-500
+380
 10
-709
+589
 420
 -1
 -1
@@ -616,7 +620,7 @@ panic_fraction
 panic_fraction
 0
 100
-10.0
+0.0
 1
 1
 NIL
@@ -668,7 +672,7 @@ SWITCH
 377
 speed_enabled
 speed_enabled
-1
+0
 1
 -1000
 
@@ -806,6 +810,17 @@ slipping_chance
 1
 NIL
 HORIZONTAL
+
+MONITOR
+634
+10
+738
+55
+Evacuation time
+time_of_evacuation
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
