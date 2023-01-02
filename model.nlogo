@@ -9,9 +9,6 @@ globals [
   time_of_evacuation
   max_people_on_patch
   max_people_on_patch_exit
-  level1
-  level2
-  level3
   ;keep track of number of injured and what type of injury
   il0
   il1
@@ -145,9 +142,6 @@ to setup
   set alarm? false
   set max_people_on_patch 10
   ifelse real_exits[set max_people_on_patch_exit max_people_on_patch][set max_people_on_patch_exit 2]
-  set level1 5
-  set level2 7
-  set level3 9
   set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
   ask n-of (round panic_fraction / 100 * population) people [set panic true]
@@ -324,20 +318,8 @@ to update_people_status
    ; get number of people on patch
    let n count turtles-on patch-here
 
-  set health_state update_hs n
-   ; update health based on crowdness
-;   if (n >= level1) and (n < level2) [set health_state health_state - 1]
-;   if (n >= level2) and (n < level3) [set health_state health_state - 2]
-;   if n >= level3 [set health_state health_state - 3]
+   set health_state update_hs n
    if health_state < 0 [set health_state 0]
-;   ; die
-;   if health_state = 0 [set dead true]
-;   ; change color
-;   if (health_state <= 10) and (health_state >= 8) [set color green]
-;   if (health_state < 8) and (health_state >= 5) [set color yellow]
-;   if (health_state < 5) and (health_state >= 1) [set color orange]
-;   if health_state = 0 [set color red]
-;
    ;get injury level and set color accordingly
    update_injury_level
    (
