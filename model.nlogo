@@ -28,14 +28,16 @@ people-own[
   health_state
   injury_level
   evac_time
-  direction_to_go;
-  decision_to_take; T/F default true is rational decision
-  panic;T/F
-  panic_percentage; range (0,1]
-  aware ;T/F
-  evacuated;T/F
-  escaping; T/F
-  dead; T/F
+  direction_to_go
+  decision_to_take ;T/F default true is rational decision
+  panic            ;T/F
+  panic_percentage ;range (0,1]
+  aware            ;T/F
+  evacuated        ;T/F
+  escaping         ;T/F
+  dead             ;T/F
+  age              ;C = child / A = adult / E = elderly
+  gender           ;M = male / F = female
 ]
 
 ;square meter class
@@ -128,6 +130,8 @@ to setup
     set evacuated false
     set dead false
     set health_state 100
+    set gender "M"
+    set age "A"
     move-to one-of patches with [pcolor = white]
   ]
 
@@ -147,6 +151,9 @@ to setup
   set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
   ask n-of (round panic_fraction / 100 * population) people [set panic true]
+  ask n-of (round female_fraction / 100 * population) people [set gender "F"]
+  ask n-of (round children_fraction / 100 * population) people [set age "C"]
+  ask n-of (round elderly_fraction / 100 * population) people [set age "E"]
   ask people with [panic = true] [set panic_percentage random 10001 / 10000]; setting value in range (0,1] if panic is present
 
 end
@@ -355,7 +362,13 @@ end
 ; descrease value by percentage value based on n (number of people in same patch)
 to-report update_hs [n]
   ;report health_state - (health_state * (n - 1) / 100)
-  report health_state - ((n - 1) * injury_weight)
+  ; if elder the injury is twice as bad, if children thrice
+  (
+    ifelse age = "A" [report health_state - ((n - 1) * injury_weight)]
+           age = "E" [report health_state - ((n - 1) * injury_weight * 2)]
+           age = "C" [report health_state - ((n - 1) * injury_weight * 3)]
+  )
+
 end
 
 ; update speed based on injury level (TODO also on gender/age)
@@ -366,10 +379,18 @@ to update_speed
           injury_level = 4 [set speed 2]    ;severe
           injury_level = 3 [set speed 3]    ;serious
           injury_level = 2 [set speed 4]    ;moderate
-          injury_level = 1 [set speed 4.5]  ;minor
+          injury_level = 1 [set speed 5]  ;minor
           injury_level = 0 [set speed 5]    ;healthy
   )
+  (
+    ifelse age = "E" [set speed speed - 3]
+           age = "C" [set speed speed - 2]
+  )
+  if gender = "F" [set speed speed - 1]
+
+  if (speed < 0) and (injury_level < 6)[set speed 1]
 end
+
 
 ; move person forward of speed patches if possible, if there is a wall or an obstacle stop
 to move_forward
@@ -552,7 +573,7 @@ aware_fraction
 aware_fraction
 0
 100
-50.0
+0.0
 1
 1
 NIL
@@ -821,6 +842,66 @@ time_of_evacuation
 17
 1
 11
+
+SLIDER
+241
+309
+367
+342
+female_fraction
+female_fraction
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+241
+375
+367
+408
+elderly_fraction
+elderly_fraction
+0
+100 - adult_fraction
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+241
+408
+367
+441
+children_fraction
+children_fraction
+0
+100 - adult_fraction - elderly_fraction
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+241
+342
+367
+375
+adult_fraction
+adult_fraction
+0
+100
+100.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
