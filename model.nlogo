@@ -595,7 +595,7 @@ PLOT
 10
 1250
 154
-Health Status
+Health Status Distribution
 NIL
 NIL
 0.0
@@ -884,6 +884,24 @@ adult_fraction
 1
 NIL
 HORIZONTAL
+
+PLOT
+842
+454
+1248
+604
+Average Speed
+time
+m/s
+0.0
+10.0
+0.0
+5.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -14835848 true "" " if count people > 0 [plot mean [speed] of people]"
 
 @#$#@#$#@
 ## WHAT IS IT?
