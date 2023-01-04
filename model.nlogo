@@ -181,7 +181,6 @@ to start_simulation
     ]
   ]
   ask people with [escaping = true and health_state > 0 and panic = true][
-    update_people_status
     if not dead [
       let items [false true]
       let p panic_percentage
@@ -337,7 +336,7 @@ end
 
 ; return the level of injury based on the health state (https://en.wikipedia.org/wiki/Abbreviated_Injury_Scale)
 to update_injury_level
-  set injury_level max list (6 - (floor health_state / 15)) 0
+  set injury_level max list (6 - (floor (health_state / 15))) 0
 end
 
 ; update health state - a possible implementation
@@ -361,7 +360,7 @@ to update_speed
           injury_level = 4 [set speed 2]    ;severe
           injury_level = 3 [set speed 3]    ;serious
           injury_level = 2 [set speed 4]    ;moderate
-          injury_level = 1 [set speed 5]  ;minor
+          injury_level = 1 [set speed 5]    ;minor
           injury_level = 0 [set speed 5]    ;healthy
   )
   (
@@ -382,7 +381,8 @@ to move_forward
   ; if slipping decrease health_state by 25%
   if slip [set health_state health_state - (health_state / 4)]
   let i 1
-  while[(i <= speed) and (not slip)]
+  update_people_status
+  while[(i <= speed) and (not slip) and (not dead)]
   [
     move_person
     set i i + 1
@@ -403,6 +403,7 @@ end
 
 ;if people are with decision_to_take false ( i.e. not rational decision) they will tend to follow other people instead of looking for an exit
 to follow_crowd
+  update_people_status
   if evacuated [update_injury_output die]
   ;the following block is the same as move_person, based on the assumption that if an exit is close, rationality overcome panic
   ;if near an exit
@@ -696,7 +697,7 @@ INPUTBOX
 105
 369
 injury_weight
-0.2
+0.25
 1
 0
 Number
