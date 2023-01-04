@@ -6,10 +6,12 @@ breed[people person]
 globals [
   alarm?
   people_left
-  time_of_evacuation
+  ;time_of_evacuation
   max_people_on_patch
   max_people_on_patch_exit
-  injury_levels_histogram
+  level1
+  level2
+  level3
   ;keep track of number of injured and what type of injury
   il0
   il1
@@ -26,16 +28,14 @@ people-own[
   health_state
   injury_level
   evac_time
-  direction_to_go
-  decision_to_take ;T/F default true is rational decision
-  panic            ;T/F
-  panic_percentage ;range (0,1]
-  aware            ;T/F
-  evacuated        ;T/F
-  escaping         ;T/F
-  dead             ;T/F
-  age              ;C = child / A = adult / E = elderly
-  gender           ;M = male / F = female
+  direction_to_go;
+  decision_to_take; T/F default true is rational decision
+  panic;T/F
+  panic_percentage; range (0,1]
+  aware ;T/F
+  evacuated;T/F
+  escaping; T/F
+  dead; T/F
 ]
 
 ;square meter class
@@ -128,8 +128,7 @@ to setup
     set evacuated false
     set dead false
     set health_state 100
-    set gender "M"
-    set age "A"
+    ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
 
@@ -139,16 +138,16 @@ to setup
   set il3 0
   set il4 0
   set il5 0
-  set injury_levels_histogram []
+
   set alarm? false
   set max_people_on_patch 10
   ifelse real_exits[set max_people_on_patch_exit max_people_on_patch][set max_people_on_patch_exit 2]
-  set time_of_evacuation 0
+  set level1 5
+  set level2 7
+  set level3 9
+  ;set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
   ask n-of (round panic_fraction / 100 * population) people [set panic true]
-  ask n-of (round female_fraction / 100 * population) people [set gender "F"]
-  ask n-of (round children_fraction / 100 * population) people [set age "C"]
-  ask n-of (round elderly_fraction / 100 * population) people [set age "E"]
   ask people with [panic = true] [set panic_percentage random 10001 / 10000]; setting value in range (0,1] if panic is present
 
 end
@@ -182,6 +181,7 @@ to start_simulation
     ]
   ]
   ask people with [escaping = true and health_state > 0 and panic = true][
+    update_people_status
     if not dead [
       let items [false true]
       let p panic_percentage
@@ -194,9 +194,6 @@ to start_simulation
         [follow_crowd]
     ]
   ]
-
-  ;update time of evacuation
-  if alarm? [set time_of_evacuation time_of_evacuation + 1]
 
   ;update patch attributes
   ask patches [set num_people count people-here]
@@ -318,8 +315,20 @@ to update_people_status
    ; get number of people on patch
    let n count turtles-on patch-here
 
-   set health_state update_hs n
+  set health_state update_hs n
+   ; update health based on crowdness
+;   if (n >= level1) and (n < level2) [set health_state health_state - 1]
+;   if (n >= level2) and (n < level3) [set health_state health_state - 2]
+;   if n >= level3 [set health_state health_state - 3]
    if health_state < 0 [set health_state 0]
+;   ; die
+;   if health_state = 0 [set dead true]
+;   ; change color
+;   if (health_state <= 10) and (health_state >= 8) [set color green]
+;   if (health_state < 8) and (health_state >= 5) [set color yellow]
+;   if (health_state < 5) and (health_state >= 1) [set color orange]
+;   if health_state = 0 [set color red]
+;
    ;get injury level and set color accordingly
    update_injury_level
    (
@@ -337,20 +346,14 @@ end
 
 ; return the level of injury based on the health state (https://en.wikipedia.org/wiki/Abbreviated_Injury_Scale)
 to update_injury_level
-  set injury_level max list (6 - (floor (health_state / 15))) 0
+  set injury_level max list (6 - (floor health_state / 15)) 0
 end
 
 ; update health state - a possible implementation
 ; descrease value by percentage value based on n (number of people in same patch)
 to-report update_hs [n]
   ;report health_state - (health_state * (n - 1) / 100)
-  ; if elder the injury is twice as bad, if children thrice
-  (
-    ifelse age = "A" [report health_state - ((n - 1) * injury_weight)]
-           age = "E" [report health_state - ((n - 1) * injury_weight * 2)]
-           age = "C" [report health_state - ((n - 1) * injury_weight * 3)]
-  )
-
+  report health_state - ((n - 1) * injury_weight)
 end
 
 ; update speed based on injury level (TODO also on gender/age)
@@ -361,29 +364,18 @@ to update_speed
           injury_level = 4 [set speed 2]    ;severe
           injury_level = 3 [set speed 3]    ;serious
           injury_level = 2 [set speed 4]    ;moderate
-          injury_level = 1 [set speed 5]    ;minor
+          injury_level = 1 [set speed 4.5]  ;minor
           injury_level = 0 [set speed 5]    ;healthy
   )
-  (
-    ifelse age = "E" [set speed speed - 3]
-           age = "C" [set speed speed - 2]
-  )
-  if gender = "F" [set speed speed - 1]
-
-  if (speed < 0) and (injury_level < 6)[set speed 1]
 end
-
 
 ; move person forward of speed patches if possible, if there is a wall or an obstacle stop
 to move_forward
   if not speed_enabled [set speed 1]
   let slip false
   if glass_bottles [set slip get_slip]
-  ; if slipping decrease health_state by 25%
-  if slip [set health_state health_state - (health_state / 4)]
   let i 1
-  update_people_status
-  while[(i <= speed) and (not slip) and (not dead)]
+  while[(i <= speed) and (not slip)]
   [
     move_person
     set i i + 1
@@ -400,12 +392,10 @@ to update_injury_output
           injury_level = 1 [set il1 il1 + 1]    ;minor
           injury_level = 0 [set il0 il0 + 1]    ;healthy
   )
-  set injury_levels_histogram fput injury_level injury_levels_histogram
 end
 
 ;if people are with decision_to_take false ( i.e. not rational decision) they will tend to follow other people instead of looking for an exit
 to follow_crowd
-  update_people_status
   if evacuated [update_injury_output die]
   ;the following block is the same as move_person, based on the assumption that if an exit is close, rationality overcome panic
   ;if near an exit
@@ -439,9 +429,9 @@ to-report get_slip
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-380
+500
 10
-589
+709
 420
 -1
 -1
@@ -466,10 +456,10 @@ ticks
 30.0
 
 INPUTBOX
-0
-373
-104
-433
+218
+246
+322
+306
 scale
 2.0
 1
@@ -477,10 +467,10 @@ scale
 Number
 
 INPUTBOX
-216
-372
-319
-432
+0
+246
+103
+306
 wall-thickness
 0.0
 1
@@ -488,10 +478,10 @@ wall-thickness
 Number
 
 INPUTBOX
-170
-10
-275
-70
+182
+118
+287
+178
 population
 30000.0
 1
@@ -550,15 +540,15 @@ NIL
 1
 
 SLIDER
-0
-98
-172
-131
+3
+118
+175
+151
 aware_fraction
 aware_fraction
 0
 100
-0.0
+50.0
 1
 1
 NIL
@@ -598,7 +588,7 @@ PLOT
 10
 1250
 154
-Health Status Distribution
+Health Status
 NIL
 NIL
 0.0
@@ -618,25 +608,35 @@ PENS
 "healthy" 1.0 0 -11085214 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 255 0] / people_left]"
 
 SLIDER
-0
-133
-172
-166
+3
+153
+175
+186
 panic_fraction
 panic_fraction
 0
 100
-0.0
+10.0
 1
 1
 NIL
 HORIZONTAL
 
+TEXTBOX
+112
+225
+213
+243
+DEBUG VARIABLES
+11
+74.0
+0
+
 INPUTBOX
-106
-373
-212
-433
+107
+246
+213
+306
 people_dim
 0.75
 1
@@ -662,21 +662,21 @@ PENS
 "evacuation time" 1.0 0 -8630108 true "" "let evac_people people with [evacuated]\nif any? evac_people[\n   let m mean [evac_time] of evac_people\n   if m > 0 [plot m]\n]"
 
 SWITCH
-112
-298
-239
-331
+108
+344
+235
+377
 speed_enabled
 speed_enabled
-0
+1
 1
 -1000
 
 MONITOR
-715
-260
-775
-305
+740
+386
+800
+431
 Fatal
 count people with [dead]
 17
@@ -685,20 +685,20 @@ count people with [dead]
 
 INPUTBOX
 0
-297
+309
 105
-365
+369
 injury_weight
-0.25
+0.2
 1
 0
 Number
 
 SWITCH
-188
-133
-315
-166
+108
+309
+235
+342
 real_exits
 real_exits
 0
@@ -706,10 +706,10 @@ real_exits
 -1000
 
 MONITOR
-656
-216
-715
-261
+740
+156
+799
+201
 Minor
 il1
 17
@@ -717,10 +717,10 @@ il1
 11
 
 MONITOR
-715
-216
-774
-261
+740
+202
+799
+247
 Moderate
 il2
 17
@@ -728,10 +728,10 @@ il2
 11
 
 MONITOR
-774
-216
-833
-261
+740
+248
+799
+293
 Serious
 il3
 17
@@ -739,10 +739,10 @@ il3
 11
 
 MONITOR
-597
-260
-656
-305
+740
+294
+799
+339
 Severe
 il4
 17
@@ -750,21 +750,31 @@ il4
 11
 
 MONITOR
-656
-260
-715
-305
+740
+340
+800
+385
 Critical
 il5
 17
 1
 11
 
+TEXTBOX
+732
+93
+812
+111
+INJURY LEVELS
+11
+0.0
+1
+
 MONITOR
-597
-216
-656
-261
+740
+110
+799
+155
 Healthy
 il0
 17
@@ -772,10 +782,10 @@ il0
 11
 
 SWITCH
-188
-98
-314
-131
+0
+398
+126
+431
 glass_bottles
 glass_bottles
 1
@@ -783,10 +793,10 @@ glass_bottles
 -1000
 
 SLIDER
-113
-333
-239
-366
+0
+437
+126
+470
 slipping_chance
 slipping_chance
 0
@@ -796,113 +806,6 @@ slipping_chance
 1
 NIL
 HORIZONTAL
-
-MONITOR
-634
-10
-738
-55
-Evacuation time
-time_of_evacuation
-17
-1
-11
-
-SLIDER
-0
-177
-126
-210
-female_fraction
-female_fraction
-0
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-136
-177
-262
-210
-elderly_fraction
-elderly_fraction
-0
-100 - adult_fraction
-0.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-136
-210
-262
-243
-children_fraction
-children_fraction
-0
-100 - adult_fraction - elderly_fraction
-0.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-0
-210
-126
-243
-adult_fraction
-adult_fraction
-0
-100
-100.0
-1
-1
-NIL
-HORIZONTAL
-
-PLOT
-596
-305
-839
-451
-Average Speed
-time
-m/s
-0.0
-10.0
-0.0
-5.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -14835848 true "" " if count people > 0 [plot mean [speed] of people]"
-
-PLOT
-597
-66
-833
-216
-Injury Levels
-injury level
-number
-0.0
-10.0
-0.0
-10.0
-false
-false
-"set-plot-x-range 0 5\nset-plot-y-range -25 max (list il0 il1 il2 il3 il4 il5) + 25\nset-histogram-num-bars 6" "set-plot-y-range -25 max (list il0 il1 il2 il3 il4 il5) + 25"
-PENS
-"default" 1.0 0 -13791810 true "" "histogram injury_levels_histogram"
 
 @#$#@#$#@
 ## WHAT IS IT?
