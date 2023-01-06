@@ -323,8 +323,7 @@ to update_people_status
    ;get injury level and set color accordingly
    update_injury_level
    (
-     ifelse injury_level = 6 [set dead true set color rgb 255 0 0
-                              set injury_levels_histogram fput injury_level injury_levels_histogram]  ;fatal
+     ifelse injury_level = 6 [set dead true set color rgb 255 0 0 ]  ;fatal
             injury_level = 5 [set color rgb 255 102 0]              ;critical
             injury_level = 4 [set color rgb 255 204 0]              ;severe
             injury_level = 3 [set color rgb 0 153 255]              ;serious
