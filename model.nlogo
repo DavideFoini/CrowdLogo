@@ -599,7 +599,7 @@ PLOT
 10
 1250
 154
-Health Status Distribution
+Injury Levels
 NIL
 NIL
 0.0
@@ -610,13 +610,13 @@ true
 true
 "" ""
 PENS
-"minor" 1.0 0 -5509967 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 153 255 102] / people_left]"
-"moderate" 1.0 0 -11221820 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 255 255] / people_left]"
-"serious" 1.0 0 -14454117 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 153 255] / people_left]"
-"severe" 1.0 0 -1184463 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 204 0] / people_left]"
-"critical" 1.0 0 -955883 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 102 0] / people_left]"
-"fatal" 1.0 0 -2674135 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 0 0] / people_left]"
-"healthy" 1.0 0 -11085214 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 255 0] / people_left]"
+"minor" 1.0 0 -5509967 true "" "if (alarm? = true) and (people_left > 0) [plot il1]"
+"moderate" 1.0 0 -11221820 true "" "if (alarm? = true) and (people_left > 0) [plot il2]"
+"serious" 1.0 0 -14454117 true "" "if (alarm? = true) and (people_left > 0) [plot il3]"
+"severe" 1.0 0 -1184463 true "" "if (alarm? = true) and (people_left > 0) [plot il4]"
+"critical" 1.0 0 -955883 true "" "if (alarm? = true) and (people_left > 0) [plot il5]"
+"fatal" 1.0 0 -2674135 true "" "if (alarm? = true) and (people_left > 0) [plot count people with [dead]]"
+"healthy" 1.0 0 -11085214 true "" "if (alarm? = true) and (people_left > 0) [plot il0]"
 
 SLIDER
 0
@@ -674,10 +674,10 @@ speed_enabled
 -1000
 
 MONITOR
-715
-260
-775
-305
+716
+110
+776
+155
 Fatal
 count people with [dead]
 17
@@ -707,10 +707,10 @@ real_exits
 -1000
 
 MONITOR
-656
-216
-715
-261
+657
+66
+716
+111
 Minor
 il1
 17
@@ -718,10 +718,10 @@ il1
 11
 
 MONITOR
-715
-216
-774
-261
+716
+66
+775
+111
 Moderate
 il2
 17
@@ -729,10 +729,10 @@ il2
 11
 
 MONITOR
-774
-216
-833
-261
+775
+66
+834
+111
 Serious
 il3
 17
@@ -740,10 +740,10 @@ il3
 11
 
 MONITOR
-597
-260
-656
-305
+598
+110
+657
+155
 Severe
 il4
 17
@@ -751,10 +751,10 @@ il4
 11
 
 MONITOR
-656
-260
-715
-305
+657
+110
+716
+155
 Critical
 il5
 17
@@ -762,10 +762,10 @@ il5
 11
 
 MONITOR
-597
-216
-656
-261
+598
+66
+657
+111
 Healthy
 il0
 17
@@ -870,10 +870,10 @@ NIL
 HORIZONTAL
 
 PLOT
-596
-305
-839
-451
+594
+214
+837
+360
 Average Speed
 time
 m/s
@@ -886,24 +886,6 @@ false
 "" ""
 PENS
 "default" 1.0 0 -14835848 true "" " if count people > 0 [plot mean [speed] of people]"
-
-PLOT
-597
-66
-833
-216
-Injury Levels
-injury level
-number
-0.0
-10.0
-0.0
-10.0
-false
-false
-"set-plot-x-range 0 6\nset-plot-y-range -25 max (list il0 il1 il2 il3 il4 il5) + 25\nset-histogram-num-bars 6" "set-plot-y-range -25 max (list il0 il1 il2 il3 il4 il5) + 25"
-PENS
-"default" 1.0 0 -13791810 true "" "if alarm? = true [histogram injury_levels_histogram]"
 
 @#$#@#$#@
 ## WHAT IS IT?
