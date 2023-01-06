@@ -199,7 +199,7 @@ to start_simulation
   if alarm? [set time_of_evacuation time_of_evacuation + 1]
 
   ;update patch attributes
-  ask patches [set num_people count people-here]
+  ask patches [set num_people count people-here with [not dead]]
   set people_left count people
   tick
 end
@@ -316,7 +316,7 @@ end
 ;update health, evacuated, speed
 to update_people_status
    ; get number of people on patch
-   let n count turtles-on patch-here
+   let n count (turtles-on patch-here) with [not dead]
 
    set health_state update_hs n
    if health_state < 0 [set health_state 0]
@@ -332,7 +332,6 @@ to update_people_status
             injury_level = 1 [set color rgb 153 255 102]            ;minor
             injury_level = 0 [set color rgb 0 255 0]                ;healthy
    )
-
   update_speed
 end
 
@@ -344,6 +343,7 @@ end
 ; update health state - a possible implementation
 ; descrease value by percentage value based on n (number of people in same patch)
 to-report update_hs [n]
+  if n < 0 [print "UELLAAAAAA"]
   ;report health_state - (health_state * (n - 1) / 100)
   ; if elder the injury is twice as bad, if children thrice
   (
@@ -371,7 +371,7 @@ to update_speed
   )
   if gender = "F" [set speed speed - 1]
 
-  if (speed < 0) and (injury_level < 6)[set speed 1]
+  if (speed <= 0) and (injury_level < 6)[set speed 1]
 end
 
 
@@ -380,8 +380,8 @@ to move_forward
   if not speed_enabled [set speed 1]
   let slip false
   if glass_bottles [set slip get_slip]
-  ; if slipping decrease health_state by 25%
-  if slip [set health_state health_state - (health_state / 4)]
+  ; if slipping decrease health_state by 5%
+  if slip [set health_state health_state - (health_state / 20)]
   let i 1
   update_people_status
   while[(i <= speed) and (not slip) and (not dead)]
@@ -690,7 +690,7 @@ INPUTBOX
 105
 365
 injury_weight
-0.0
+0.03
 1
 0
 Number
@@ -792,7 +792,7 @@ slipping_chance
 slipping_chance
 0
 100
-5.0
+1.0
 1
 1
 NIL
@@ -901,9 +901,9 @@ number
 10.0
 false
 false
-"set-plot-x-range 0 5\nset-plot-y-range -25 max (list il0 il1 il2 il3 il4 il5) + 25\nset-histogram-num-bars 6" "set-plot-y-range -25 max (list il0 il1 il2 il3 il4 il5) + 25"
+"set-plot-x-range 0 6\nset-plot-y-range -25 max (list il0 il1 il2 il3 il4 il5) + 25\nset-histogram-num-bars 6" "set-plot-y-range -25 max (list il0 il1 il2 il3 il4 il5) + 25"
 PENS
-"default" 1.0 0 -13791810 true "" "histogram injury_levels_histogram"
+"default" 1.0 0 -13791810 true "" "if alarm? = true [histogram injury_levels_histogram]"
 
 @#$#@#$#@
 ## WHAT IS IT?
