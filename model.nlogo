@@ -112,6 +112,7 @@ end
 to setup
   clear-all
   reset-ticks
+  random-seed 42
   ;draw map
   draw_map_SC
   ;spawn people
@@ -343,7 +344,6 @@ end
 ; update health state - a possible implementation
 ; descrease value by percentage value based on n (number of people in same patch)
 to-report update_hs [n]
-  if n < 0 [print "UELLAAAAAA"]
   ;report health_state - (health_state * (n - 1) / 100)
   ; if elder the injury is twice as bad, if children thrice
   (
@@ -372,6 +372,7 @@ to update_speed
   if gender = "F" [set speed speed - 1]
 
   if (speed <= 0) and (injury_level < 6)[set speed 1]
+  if (speed < 0) and (injury_level = 6)[set speed 0]
 end
 
 
@@ -581,7 +582,7 @@ PLOT
 157
 1249
 301
-Evacuation speed
+Evacuation Speed
 time
 NIL
 0.0
@@ -649,7 +650,7 @@ PLOT
 305
 1249
 450
-Evacuation time
+Evacuation Time
 time
 NIL
 0.0
@@ -690,7 +691,7 @@ INPUTBOX
 105
 365
 injury_weight
-0.03
+0.08
 1
 0
 Number
@@ -885,7 +886,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -14835848 true "" " if count people > 0 [plot mean [speed] of people]"
+"default" 1.0 0 -14835848 true "" " if (count people > 0) and (alarm? = true) [plot mean [speed] of people]"
 
 @#$#@#$#@
 ## WHAT IS IT?
