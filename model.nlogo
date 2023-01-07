@@ -1234,6 +1234,184 @@ NetLogo 6.3.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="30000people_descriptive" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup
+start_evacuation</setup>
+    <go>start_simulation</go>
+    <metric>il0</metric>
+    <metric>il1</metric>
+    <metric>il2</metric>
+    <metric>il3</metric>
+    <metric>il4</metric>
+    <metric>il5</metric>
+    <metric>count people with [dead]</metric>
+    <enumeratedValueSet variable="scale">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="glass_bottles">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="adult_fraction">
+      <value value="80"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="30000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="elderly_fraction">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="slipping_chance">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="people_dim">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wall-thickness">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed_enabled">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="panic_fraction">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="aware_fraction">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="female_fraction">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="children_fraction">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="real_exits">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="injury_weight">
+      <value value="0.08"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="27500people_descriptive" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup
+start_evacuation</setup>
+    <go>start_simulation</go>
+    <metric>il0</metric>
+    <metric>il1</metric>
+    <metric>il2</metric>
+    <metric>il3</metric>
+    <metric>il4</metric>
+    <metric>il5</metric>
+    <metric>count people with [dead]</metric>
+    <enumeratedValueSet variable="scale">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="glass_bottles">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="adult_fraction">
+      <value value="80"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="27500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="elderly_fraction">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="slipping_chance">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="people_dim">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wall-thickness">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed_enabled">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="panic_fraction">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="aware_fraction">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="female_fraction">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="children_fraction">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="real_exits">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="injury_weight">
+      <value value="0.08"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="people_descriptive" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+start_evacuation</setup>
+    <go>start_simulation</go>
+    <final>export-all-plots "C:/Users/dadpl/git/CrowdLogo/results/population.csv"</final>
+    <metric>il0</metric>
+    <metric>il1</metric>
+    <metric>il2</metric>
+    <metric>il3</metric>
+    <metric>il4</metric>
+    <metric>il5</metric>
+    <metric>count people with [dead]</metric>
+    <enumeratedValueSet variable="scale">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="glass_bottles">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="adult_fraction">
+      <value value="80"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="30000"/>
+      <value value="27500"/>
+      <value value="25000"/>
+      <value value="22500"/>
+      <value value="20000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="elderly_fraction">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="slipping_chance">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="people_dim">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wall-thickness">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed_enabled">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="panic_fraction">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="aware_fraction">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="female_fraction">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="children_fraction">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="real_exits">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="injury_weight">
+      <value value="0.08"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
