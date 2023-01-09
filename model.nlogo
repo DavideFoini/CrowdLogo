@@ -10,6 +10,14 @@ globals [
   max_people_on_patch
   max_people_on_patch_exit
   injury_levels_histogram
+
+  S_gate
+  SW_gate
+  SE_gate
+  N_gate
+  NW_gate
+  NE_gate
+
   ;keep track of number of injured and what type of injury
   il0
   il1
@@ -80,6 +88,15 @@ end
 ;WHITE - inside
 ;GREY - obstacle
 to draw_map_SC
+
+  ;gates
+  set N_gate no-patches
+  set S_gate no-patches
+  set SE_gate no-patches
+  set SW_gate no-patches
+  set NE_gate no-patches
+  set NW_gate no-patches
+
   ;resize map
   resize-world -50 * scale 50 * scale -100 * scale 100 * scale
   ask patches[
@@ -92,14 +109,35 @@ to draw_map_SC
 
     ;paint exits
     ;S EXIT
-    if ((pycor / scale <= -84) and (pycor / scale >= -84 - wall-thickness) and (pxcor / scale <= 5.4) and (pxcor / scale >= -5.4)) [ set pcolor green ]
+    if ((pycor / scale <= -84) and (pycor / scale >= -84 - wall-thickness) and (pxcor / scale <= 5.4) and (pxcor / scale >= -5.4)) [
+      set pcolor green
+      set S_gate (patch-set S_gate self)
+    ]
     ;N EXIT
-    if ((pycor / scale >= 84) and (pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) and (not real_exits)[ set pcolor green ]
-    ;SE AND SW EXITS
-    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale > -84) and (pycor / scale <= -73)) [ set pcolor green ]
-    ;NE AND NW EXITS
-    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= 73) and (pycor / scale < 84)) [ set pcolor green ]
-
+    if ((pycor / scale >= 84) and (pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) and (not real_exits)[
+      set pcolor green
+      set N_gate (patch-set N_gate self)
+    ]
+    ;SE EXIT
+    if ((pxcor / scale >= 38) and (pxcor / scale <= 38 + wall-thickness) and (pycor / scale > -84) and (pycor / scale <= -73)) [
+      set pcolor green
+      set SE_gate (patch-set SE_gate self)
+    ]
+    ;SW EXIT
+    if ((pxcor / scale <= -38) and (pxcor / scale >= -38 - wall-thickness) and (pycor / scale > -84) and (pycor / scale <= -73)) [
+      set pcolor green
+      set SW_gate (patch-set SW_gate self)
+    ]
+    ;NE EXITS
+    if ((pxcor / scale >= 38) and (pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= 73) and (pycor / scale < 84)) [
+      set pcolor green
+      set NE_gate (patch-set NE_gate self)
+    ]
+    ;NW EXITS
+    if ((pxcor / scale <= -38) and (pxcor / scale >= -38 - wall-thickness) and (pycor / scale >= 73) and (pycor / scale < 84)) [
+      set pcolor green
+      set NW_gate (patch-set NW_gate self)
+    ]
     ;statue
     if (abs pycor / scale <= 6.25) and (abs pxcor / scale <= 5) [ set pcolor gray ]
 
@@ -214,11 +252,22 @@ ask people[
     set escaping true
     ;ifelse (panic = false)[
       ifelse(aware = true)
-        [set destination min-one-of patches with [pcolor = green] [distance myself]]
+        [set destination one-of get_patch_set min-one-of patches with [pcolor = green] [distance myself]]
         [set destination one-of patches with [pcolor = green]]
       face destination]
     ;[face max-one-of neighbors [num_people] ]; if panic is present people will face the neihbors with most people in
   ;]
+end
+
+to-report get_patch_set[p]
+  (
+    ifelse member? p NE_gate [report NE_gate]
+           member? p NW_gate [report NW_gate]
+           member? p SW_gate [report SW_gate]
+           member? p SE_gate [report SE_gate]
+           member? p S_gate [report S_gate]
+           member? p N_gate [report N_gate]
+  )
 end
 
 ;move input person towards his/her dest
