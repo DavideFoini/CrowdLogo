@@ -1,0 +1,3 @@
+export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/accessible_exits/evacuation_speed/evacuation_speed_run_" behaviorspace-run-number ".csv")
+export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/accessible_exits/evacuation_time/evacuation_time_run_" behaviorspace-run-number ".csv")
+export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/accessible_exits/average_speed/average_speed_run_" behaviorspace-run-number ".csv")
