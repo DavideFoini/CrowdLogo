@@ -150,7 +150,7 @@ end
 to setup
   clear-all
   reset-ticks
-  random-seed 42
+  ;random-seed 42
   ;draw map
   draw_map_SC
   ;spawn people
@@ -740,7 +740,7 @@ INPUTBOX
 105
 365
 injury_weight
-0.08
+0.1365
 1
 0
 Number
@@ -1288,9 +1288,9 @@ NetLogo 6.3.0
     <setup>setup
 start_evacuation</setup>
     <go>start_simulation</go>
-    <final>export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/evacuation_speed_run_" behaviorspace-run-number ".csv")
-export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/evacuation_time_run_" behaviorspace-run-number ".csv")
-export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/average_speed_run_" behaviorspace-run-number ".csv")</final>
+    <final>export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/evacuation_speed/evacuation_speed_run_" behaviorspace-run-number ".csv")
+export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/evacuation_time/evacuation_time_run_" behaviorspace-run-number ".csv")
+export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/average_speed/average_speed_run_" behaviorspace-run-number ".csv")</final>
     <metric>il0</metric>
     <metric>il1</metric>
     <metric>il2</metric>
@@ -1341,7 +1341,7 @@ export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/descript
       <value value="true"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
+      <value value="0.1365"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="speculative_num_people" repetitions="1" runMetricsEveryStep="false">
@@ -1405,7 +1405,7 @@ export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculat
       <value value="true"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
+      <value value="0.1365"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="speculative_aware_fraction" repetitions="1" runMetricsEveryStep="false">
@@ -1470,7 +1470,7 @@ export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculat
       <value value="true"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
+      <value value="0.1365"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="speculative_accessible_exits" repetitions="3" runMetricsEveryStep="false">
@@ -1531,7 +1531,7 @@ export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculat
       <value value="false"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
+      <value value="0.1365"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="speculative_glass_bottles" repetitions="3" runMetricsEveryStep="false">
@@ -1592,7 +1592,7 @@ export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculat
       <value value="true"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
+      <value value="0.1365"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
