@@ -1,0 +1,32 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+ybar, % style of the histogram: clustered columns
+width=\textwidth, % width of the plot
+height=8cm, % height of the plot
+xlabel={X axis}, % label for the x-axis
+ylabel={Y axis}, % label for the y-axis
+symbolic x coords={HEALTHY,MINOR,MODERATE,SERIOUS,	SEVERE,CRITICAL,FATAL}, % labels for the x-ticks
+xtick=data, % position the x-ticks at the data points
+ymin=0, % minimum value of the y-axis
+legend style={at={(1,1)}, anchor=north east}, % position of the legend
+legend cell align=left, % alignment of the legend cells
+ymajorgrids=true, % display major grids
+bar width=0.25cm % width of the bars
+]
+\addplot[color=blue] coordinates{}; % plot of the first histogram
+\addplot[color=red] coordinates{}; % plot of the second histogram
+\addplot[color=green] coordinates{}; % plot of the third histogram
+\addplot[color=lime] coordinates{}; % plot of the fourth histogram
+\addplot[color=violet] coordinates{}; % plot of the fifth histogram
+\addplot[color=cyan] coordinates{}; % plot of the first histogram
+\addplot[color=purple] coordinates{}; % plot of the second histogram
+\addplot[color=orange] coordinates{}; % plot of the third histogram
+\addplot[color=teal] coordinates{}; % plot of the fourth histogram
+\addplot[color=magenta] coordinates{}; % plot of the fifth histogram
+\legend{run \#1,  run \#2, run \#3, run \#4, run \#5, run \#6,  run \#7, run \#8, run \#9, run \#10} % legend of the plot
+\end{axis}
+\end{tikzpicture}
+\end{document}

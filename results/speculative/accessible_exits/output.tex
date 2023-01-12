@@ -1,0 +1,35 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+title={Injury Levels}
+ybar, % style of the histogram: clustered columns
+width=\textwidth, % width of the plot
+height=8cm, % height of the plot
+xlabel={X axis}, % label for the x-axis
+ylabel={Y axis}, % label for the y-axis
+symbolic x coords={HEALTHY,MINOR,MODERATE,SERIOUS,	SEVERE,CRITICAL,FATAL}, % labels for the x-ticks
+xtick=data, % position the x-ticks at the data points
+ymin=0, % minimum value of the y-axis
+legend style={at={(1,1)}, anchor=north east}, % position of the legend
+legend cell align=left, % alignment of the legend cells
+ymajorgrids=true, % display major grids
+bar width=0.25cm % width of the bars
+]
+\addplot[color=teal] coordinates{(HEALTHY,16538)(MINOR,10550)(MODERATE,2106)(SERIOUS,686)(SEVERE,113)(CRITICAL,6)(FATAL,1)
+}; % plot of the first histogram
+\addplot[color=blue] coordinates{(HEALTHY,16348)(MINOR,10830)(MODERATE,2035)(SERIOUS,617)(SEVERE,146)(CRITICAL,24)(FATAL,0)
+}; % plot of the second histogram
+\addplot[color=cyan] coordinates{(HEALTHY,16338)(MINOR,10800)(MODERATE,2068)(SERIOUS,627)(SEVERE,148)(CRITICAL,16)(FATAL,3)
+}; % plot of the third histogram
+\addplot[color=violet] coordinates{(HEALTHY,17470)(MINOR,10152)(MODERATE,1803)(SERIOUS,486)(SEVERE,80)(CRITICAL,7)(FATAL,2)
+}; % plot of the fifth histogram
+\addplot[color=purple] coordinates{(HEALTHY,17416)(MINOR,10160)(MODERATE,1826)(SERIOUS,513)(SEVERE,73)(CRITICAL,12)(FATAL,0)
+}; % plot of the first histogram
+\addplot[color=magenta] coordinates{(HEALTHY,17370)(MINOR,10134)(MODERATE,1916)(SERIOUS,482)(SEVERE,91)(CRITICAL,7)(FATAL,0)
+}; % plot of the second histogram
+\legend{false \#1,  false \#2, false \#3, true \#1, true \#2, true \#3} % legend of the plot
+\end{axis}
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,23 @@
+\documentclass[../main.tex]{subfiles}
+
+
+\begin{document}
+
+\begin{tikzpicture}
+
+% Set the axis labels and title
+\begin{axis}[    xlabel={Time [s]},    ylabel={Speed [m/s]},    title={Average Speed},   legend style={at={(1,1)}, anchor=north east},]
+
+\addplot[color=teal] coordinates{}; % plot of the first histogram
+\addplot[color=blue] coordinates{}; % plot of the second histogram
+\addplot[color=cyan] coordinates{}; % plot of the third histogram
+\addplot[color=violet] coordinates{}; % plot of the fifth histogram
+\addplot[color=purple] coordinates{}; % plot of the first histogram
+\addplot[color=magenta] coordinates{}; % plot of the second histogram
+\legend{false \#1,  false \#2, false \#3, true \#1, true \#2, true \#3} % legend of the plot
+
+\end{axis}
+\end{tikzpicture}
+
+
+\end{document}

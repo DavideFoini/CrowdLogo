@@ -1,0 +1,22 @@
+\documentclass[../main.tex]{subfiles}
+
+
+\begin{document}
+
+\begin{tikzpicture}
+
+% Set the axis labels and title
+\begin{axis}[    xlabel={Time [s]},    ylabel={Speed [m/s]},    title={Average Speed},   legend style={at={(1,1)}, anchor=north east},]
+
+\addplot[color=Red] coordinates{}; % plot of the first histogram
+\addplot[color=BurntOrange] coordinates{}; % plot of the second histogram
+\addplot[color=Cyan] coordinates{}; % plot of the third histogram
+\addplot[color=SeaGreen] coordinates{}; % plot of the fourth histogram
+\addplot[color=LimeGreen] coordinates{}; % plot of the fifth histogram
+\legend{30000ppl,  27500ppl, 25000ppl, 22500 ppl, 20000 ppl} % legend of the plot
+
+\end{axis}
+\end{tikzpicture}
+
+
+\end{document}

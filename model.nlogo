@@ -150,7 +150,7 @@ end
 to setup
   clear-all
   reset-ticks
-  ;random-seed 42
+  random-seed 42
   ;draw map
   draw_map_SC
   ;spawn people
@@ -829,7 +829,7 @@ SWITCH
 131
 glass_bottles
 glass_bottles
-0
+1
 1
 -1000
 
@@ -1578,6 +1578,71 @@ export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculat
     </enumeratedValueSet>
     <enumeratedValueSet variable="panic_fraction">
       <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="aware_fraction">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="female_fraction">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="children_fraction">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="real_exits">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="injury_weight">
+      <value value="0.1365"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="speculative_panic_fraction" repetitions="1" runMetricsEveryStep="false">
+    <setup>setup
+start_evacuation</setup>
+    <go>start_simulation</go>
+    <final>export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/panic_fraction/evacuation_speed/evacuation_speed_run_" behaviorspace-run-number ".csv")
+export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/panic_fraction/evacuation_time/evacuation_time_run_" behaviorspace-run-number ".csv")
+export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/panic_fraction/average_speed/average_speed_run_" behaviorspace-run-number ".csv")</final>
+    <metric>il0</metric>
+    <metric>il1</metric>
+    <metric>il2</metric>
+    <metric>il3</metric>
+    <metric>il4</metric>
+    <metric>il5</metric>
+    <metric>count people with [dead]</metric>
+    <enumeratedValueSet variable="scale">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="glass_bottles">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="adult_fraction">
+      <value value="80"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="30000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="elderly_fraction">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="slipping_chance">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="people_dim">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="wall-thickness">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed_enabled">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="panic_fraction">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="40"/>
+      <value value="60"/>
+      <value value="80"/>
+      <value value="100"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="aware_fraction">
       <value value="50"/>

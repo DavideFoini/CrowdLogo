@@ -1,0 +1,23 @@
+\documentclass[../main.tex]{subfiles}
+
+
+\begin{document}
+
+\begin{tikzpicture}
+
+% Set the axis labels and title
+\begin{axis}[    xlabel={Time [s]},    ylabel={ppl/s},    title={Evacuation Speed},   legend style={at={(1,1)}, anchor=north east},]
+
+\addplot[color=PineGreen] coordinates{}; % plot of the first histogram
+\addplot[color=Green] coordinates{}; % plot of the second histogram
+\addplot[color=LimeGreen] coordinates{}; % plot of the third histogram
+\addplot[color=RedOrange] coordinates{}; % plot of the fourth histogram
+\addplot[color=Orange] coordinates{}; % plot of the fifth histogram
+\addplot[color=Melon] coordinates{}; % plot of the first histogram
+\legend{glass \#1,  glass \#2, glass \#3, no glass \#1,  no glass \#2, no glass \#3,} % legend of the plot
+
+\end{axis}
+\end{tikzpicture}
+
+
+\end{document}

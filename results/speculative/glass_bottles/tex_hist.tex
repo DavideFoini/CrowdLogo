@@ -1,0 +1,28 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+title={Injury Levels}
+ybar, % style of the histogram: clustered columns
+width=\textwidth, % width of the plot
+height=8cm, % height of the plot
+ylabel={Amount}, % label for the y-axis
+symbolic x coords={HEALTHY,MINOR,MODERATE,SERIOUS,SEVERE,CRITICAL,FATAL}, % labels for the x-ticks
+xtick=data, % position the x-ticks at the data points
+ymin=0, % minimum value of the y-axis
+legend style={at={(1,1)}, anchor=north east}, % position of the legend
+legend cell align=left, % alignment of the legend cells
+ymajorgrids=true, % display major grids
+bar width=0.25cm % width of the bars
+]
+\addplot[color=PineGreen] coordinates{}; % plot of the first histogram
+\addplot[color=Green] coordinates{}; % plot of the second histogram
+\addplot[color=LimeGreen] coordinates{}; % plot of the third histogram
+\addplot[color=RedOrange] coordinates{}; % plot of the fourth histogram
+\addplot[color=Orange] coordinates{}; % plot of the fifth histogram
+\addplot[color=Melon] coordinates{}; % plot of the first histogram
+\legend{glass \#1,  glass \#2, glass \#3, no glass \#1,  no glass \#2, no glass \#3,} % legend of the plot
+\end{axis}
+\end{tikzpicture}
+\end{document}

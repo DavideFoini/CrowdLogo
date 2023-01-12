@@ -1,0 +1,26 @@
+"BehaviorSpace results (NetLogo 6.3.0)"
+"model.nlogo"
+"speculative_panic_fraction"
+"01/12/2023 10:51:35:167 +0000"
+"min-pxcor","max-pxcor","min-pycor","max-pycor"
+"-100","100","-200","200"
+"[run number]","1","1","1","1","1","1","1"
+"scale","2",,,,,,
+"glass_bottles","false",,,,,,
+"adult_fraction","80",,,,,,
+"population","30000",,,,,,
+"elderly_fraction","10",,,,,,
+"slipping_chance","1",,,,,,
+"people_dim","0.75",,,,,,
+"wall-thickness","0",,,,,,
+"speed_enabled","true",,,,,,
+"panic_fraction","0",,,,,,
+"aware_fraction","50",,,,,,
+"female_fraction","50",,,,,,
+"children_fraction","10",,,,,,
+"real_exits","true",,,,,,
+"injury_weight","0.1365",,,,,,
+"[steps]","336","336","336","336","336","336","336"
+
+"[initial & final values]","il0","il1","il2","il3","il4","il5","count people with [dead]"
+,"23944","5036","805","184","28","2","1"
