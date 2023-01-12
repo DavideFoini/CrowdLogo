@@ -156,7 +156,7 @@ to setup
   ;spawn people
   create-people population [
     set color rgb 0 255 0
-    set shape "arrow"
+    set shape "person"
     set size people_dim
     set speed 1
     set rational true;
@@ -188,7 +188,7 @@ to setup
   ask n-of (round female_fraction / 100 * population) people [set gender "F"]
   ask n-of (round children_fraction / 100 * population) people [set age "C"]
   ask n-of (round elderly_fraction / 100 * population) people [set age "E"]
-  ask people with [panic = true] [set panic_percentage random 10001 / 10000]; setting value in range (0,1] if panic is present
+  ask people with [panic = true] [set panic_percentage random-float 0.75]; setting value in range (0,0.6) if panic is present
 
 end
 
@@ -221,6 +221,7 @@ to start_simulation
     ]
   ]
   ask people with [escaping = true and health_state > 0 and panic = true][
+    update_people_status
     if not dead [
       let items [false true]
       let p panic_percentage
@@ -545,7 +546,7 @@ INPUTBOX
 275
 70
 population
-300.0
+30000.0
 1
 0
 Number
@@ -678,7 +679,7 @@ panic_fraction
 panic_fraction
 0
 100
-57.0
+10.0
 1
 1
 NIL
@@ -690,7 +691,7 @@ INPUTBOX
 212
 433
 people_dim
-10.0
+0.75
 1
 0
 Number
