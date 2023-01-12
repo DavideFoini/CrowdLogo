@@ -6,18 +6,12 @@ breed[people person]
 globals [
   alarm?
   people_left
-  time_of_evacuation
+  ;time_of_evacuation
   max_people_on_patch
   max_people_on_patch_exit
-  injury_levels_histogram
-
-  S_gate
-  SW_gate
-  SE_gate
-  N_gate
-  NW_gate
-  NE_gate
-
+  level1
+  level2
+  level3
   ;keep track of number of injured and what type of injury
   il0
   il1
@@ -34,16 +28,14 @@ people-own[
   health_state
   injury_level
   evac_time
-  direction_to_go
-  decision_to_take ;T/F default true is rational decision
-  panic            ;T/F
-  panic_percentage ;range (0,1]
-  aware            ;T/F
-  evacuated        ;T/F
-  escaping         ;T/F
-  dead             ;T/F
-  age              ;C = child / A = adult / E = elderly
-  gender           ;M = male / F = female
+  direction_to_go;
+  decision_to_take; T/F default true is rational decision
+  panic;T/F
+  panic_percentage; range (0,1]
+  aware ;T/F
+  evacuated;T/F
+  escaping; T/F
+  dead; T/F
 ]
 
 ;square meter class
@@ -88,15 +80,6 @@ end
 ;WHITE - inside
 ;GREY - obstacle
 to draw_map_SC
-
-  ;gates
-  set N_gate no-patches
-  set S_gate no-patches
-  set SE_gate no-patches
-  set SW_gate no-patches
-  set NE_gate no-patches
-  set NW_gate no-patches
-
   ;resize map
   resize-world -50 * scale 50 * scale -100 * scale 100 * scale
   ask patches[
@@ -109,35 +92,14 @@ to draw_map_SC
 
     ;paint exits
     ;S EXIT
-    if ((pycor / scale <= -84) and (pycor / scale >= -84 - wall-thickness) and (pxcor / scale <= 5.4) and (pxcor / scale >= -5.4)) [
-      set pcolor green
-      set S_gate (patch-set S_gate self)
-    ]
+    if ((pycor / scale <= -84) and (pycor / scale >= -84 - wall-thickness) and (pxcor / scale <= 5.4) and (pxcor / scale >= -5.4)) [ set pcolor green ]
     ;N EXIT
-    if ((pycor / scale >= 84) and (pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) and (not real_exits)[
-      set pcolor green
-      set N_gate (patch-set N_gate self)
-    ]
-    ;SE EXIT
-    if ((pxcor / scale >= 38) and (pxcor / scale <= 38 + wall-thickness) and (pycor / scale > -84) and (pycor / scale <= -73)) [
-      set pcolor green
-      set SE_gate (patch-set SE_gate self)
-    ]
-    ;SW EXIT
-    if ((pxcor / scale <= -38) and (pxcor / scale >= -38 - wall-thickness) and (pycor / scale > -84) and (pycor / scale <= -73)) [
-      set pcolor green
-      set SW_gate (patch-set SW_gate self)
-    ]
-    ;NE EXITS
-    if ((pxcor / scale >= 38) and (pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= 73) and (pycor / scale < 84)) [
-      set pcolor green
-      set NE_gate (patch-set NE_gate self)
-    ]
-    ;NW EXITS
-    if ((pxcor / scale <= -38) and (pxcor / scale >= -38 - wall-thickness) and (pycor / scale >= 73) and (pycor / scale < 84)) [
-      set pcolor green
-      set NW_gate (patch-set NW_gate self)
-    ]
+    if ((pycor / scale >= 84) and (pycor / scale <= 84 + wall-thickness) and (pxcor / scale <= 6.1) and (pxcor / scale >= -6.1)) and (not real_exits)[ set pcolor green ]
+    ;SE AND SW EXITS
+    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale > -84) and (pycor / scale <= -73)) [ set pcolor green ]
+    ;NE AND NW EXITS
+    if ((abs pxcor / scale >= 38) and (abs pxcor / scale <= 38 + wall-thickness) and (pycor / scale >= 73) and (pycor / scale < 84)) [ set pcolor green ]
+
     ;statue
     if (abs pycor / scale <= 6.25) and (abs pxcor / scale <= 5) [ set pcolor gray ]
 
@@ -150,7 +112,6 @@ end
 to setup
   clear-all
   reset-ticks
-  random-seed 42
   ;draw map
   draw_map_SC
   ;spawn people
@@ -167,8 +128,7 @@ to setup
     set evacuated false
     set dead false
     set health_state 100
-    set gender "M"
-    set age "A"
+    ;TODO add people setup
     move-to one-of patches with [pcolor = white]
   ]
 
@@ -178,16 +138,16 @@ to setup
   set il3 0
   set il4 0
   set il5 0
-  set injury_levels_histogram []
+
   set alarm? false
   set max_people_on_patch 10
   ifelse real_exits[set max_people_on_patch_exit max_people_on_patch][set max_people_on_patch_exit 2]
-  set time_of_evacuation 0
+  set level1 5
+  set level2 7
+  set level3 9
+  ;set time_of_evacuation 0
   ask n-of (round aware_fraction / 100 * population) people [set aware true]
   ask n-of (round panic_fraction / 100 * population) people [set panic true]
-  ask n-of (round female_fraction / 100 * population) people [set gender "F"]
-  ask n-of (round children_fraction / 100 * population) people [set age "C"]
-  ask n-of (round elderly_fraction / 100 * population) people [set age "E"]
   ask people with [panic = true] [set panic_percentage random 10001 / 10000]; setting value in range (0,1] if panic is present
 
 end
@@ -221,6 +181,7 @@ to start_simulation
     ]
   ]
   ask people with [escaping = true and health_state > 0 and panic = true][
+    update_people_status
     if not dead [
       let items [false true]
       let p panic_percentage
@@ -234,11 +195,8 @@ to start_simulation
     ]
   ]
 
-  ;update time of evacuation
-  if alarm? [set time_of_evacuation time_of_evacuation + 1]
-
   ;update patch attributes
-  ask patches [set num_people count people-here with [not dead]]
+  ask patches [set num_people count people-here]
   set people_left count people
   tick
 end
@@ -252,22 +210,11 @@ ask people[
     set escaping true
     ;ifelse (panic = false)[
       ifelse(aware = true)
-        [set destination one-of get_patch_set min-one-of patches with [pcolor = green] [distance myself]]
+        [set destination min-one-of patches with [pcolor = green] [distance myself]]
         [set destination one-of patches with [pcolor = green]]
       face destination]
     ;[face max-one-of neighbors [num_people] ]; if panic is present people will face the neihbors with most people in
   ;]
-end
-
-to-report get_patch_set[p]
-  (
-    ifelse member? p NE_gate [report NE_gate]
-           member? p NW_gate [report NW_gate]
-           member? p SW_gate [report SW_gate]
-           member? p SE_gate [report SE_gate]
-           member? p S_gate [report S_gate]
-           member? p N_gate [report N_gate]
-  )
 end
 
 ;move input person towards his/her dest
@@ -366,15 +313,26 @@ end
 ;update health, evacuated, speed
 to update_people_status
    ; get number of people on patch
-   let n count (turtles-on patch-here) with [not dead]
+   let n count turtles-on patch-here
 
-   set health_state update_hs n
+  set health_state update_hs n
+   ; update health based on crowdness
+;   if (n >= level1) and (n < level2) [set health_state health_state - 1]
+;   if (n >= level2) and (n < level3) [set health_state health_state - 2]
+;   if n >= level3 [set health_state health_state - 3]
    if health_state < 0 [set health_state 0]
+;   ; die
+;   if health_state = 0 [set dead true]
+;   ; change color
+;   if (health_state <= 10) and (health_state >= 8) [set color green]
+;   if (health_state < 8) and (health_state >= 5) [set color yellow]
+;   if (health_state < 5) and (health_state >= 1) [set color orange]
+;   if health_state = 0 [set color red]
+;
    ;get injury level and set color accordingly
    update_injury_level
    (
-     ifelse injury_level = 6 [set dead true set color rgb 255 0 0
-                              set injury_levels_histogram fput injury_level injury_levels_histogram]  ;fatal
+     ifelse injury_level = 6 [set dead true set color rgb 255 0 0]  ;fatal
             injury_level = 5 [set color rgb 255 102 0]              ;critical
             injury_level = 4 [set color rgb 255 204 0]              ;severe
             injury_level = 3 [set color rgb 0 153 255]              ;serious
@@ -382,25 +340,20 @@ to update_people_status
             injury_level = 1 [set color rgb 153 255 102]            ;minor
             injury_level = 0 [set color rgb 0 255 0]                ;healthy
    )
+
   update_speed
 end
 
 ; return the level of injury based on the health state (https://en.wikipedia.org/wiki/Abbreviated_Injury_Scale)
 to update_injury_level
-  set injury_level max list (6 - (floor (health_state / 15))) 0
+  set injury_level max list (6 - (floor health_state / 15)) 0
 end
 
 ; update health state - a possible implementation
 ; descrease value by percentage value based on n (number of people in same patch)
 to-report update_hs [n]
   ;report health_state - (health_state * (n - 1) / 100)
-  ; if elder the injury is twice as bad, if children thrice
-  (
-    ifelse age = "A" [report health_state - ((n - 1) * injury_weight)]
-           age = "E" [report health_state - ((n - 1) * injury_weight * 2)]
-           age = "C" [report health_state - ((n - 1) * injury_weight * 3)]
-  )
-
+  report health_state - ((n - 1) * injury_weight)
 end
 
 ; update speed based on injury level (TODO also on gender/age)
@@ -411,30 +364,18 @@ to update_speed
           injury_level = 4 [set speed 2]    ;severe
           injury_level = 3 [set speed 3]    ;serious
           injury_level = 2 [set speed 4]    ;moderate
-          injury_level = 1 [set speed 5]    ;minor
+          injury_level = 1 [set speed 4.5]  ;minor
           injury_level = 0 [set speed 5]    ;healthy
   )
-  (
-    ifelse age = "E" [set speed speed - 3]
-           age = "C" [set speed speed - 2]
-  )
-  if gender = "F" [set speed speed - 1]
-
-  if (speed <= 0) and (injury_level < 6)[set speed 1]
-  if (speed < 0) and (injury_level = 6)[set speed 0]
 end
-
 
 ; move person forward of speed patches if possible, if there is a wall or an obstacle stop
 to move_forward
   if not speed_enabled [set speed 1]
   let slip false
   if glass_bottles [set slip get_slip]
-  ; if slipping decrease health_state by 5%
-  if slip [set health_state health_state - (health_state / 20)]
   let i 1
-  update_people_status
-  while[(i <= speed) and (not slip) and (not dead)]
+  while[(i <= speed) and (not slip)]
   [
     move_person
     set i i + 1
@@ -451,12 +392,10 @@ to update_injury_output
           injury_level = 1 [set il1 il1 + 1]    ;minor
           injury_level = 0 [set il0 il0 + 1]    ;healthy
   )
-  set injury_levels_histogram fput injury_level injury_levels_histogram
 end
 
 ;if people are with decision_to_take false ( i.e. not rational decision) they will tend to follow other people instead of looking for an exit
 to follow_crowd
-  update_people_status
   if evacuated [update_injury_output die]
   ;the following block is the same as move_person, based on the assumption that if an exit is close, rationality overcome panic
   ;if near an exit
@@ -490,9 +429,9 @@ to-report get_slip
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-380
+500
 10
-589
+709
 420
 -1
 -1
@@ -517,10 +456,10 @@ ticks
 30.0
 
 INPUTBOX
-0
-373
-104
-433
+218
+246
+322
+306
 scale
 2.0
 1
@@ -528,10 +467,10 @@ scale
 Number
 
 INPUTBOX
-216
-372
-319
-432
+0
+246
+103
+306
 wall-thickness
 0.0
 1
@@ -539,10 +478,10 @@ wall-thickness
 Number
 
 INPUTBOX
-170
-10
-275
-70
+182
+118
+287
+178
 population
 30000.0
 1
@@ -601,10 +540,10 @@ NIL
 1
 
 SLIDER
-0
-98
-172
-131
+3
+118
+175
+151
 aware_fraction
 aware_fraction
 0
@@ -631,7 +570,7 @@ PLOT
 157
 1249
 301
-Evacuation Speed
+Evacuation speed
 time
 NIL
 0.0
@@ -649,7 +588,7 @@ PLOT
 10
 1250
 154
-Injury Levels
+Health Status
 NIL
 NIL
 0.0
@@ -660,34 +599,44 @@ true
 true
 "" ""
 PENS
-"minor" 1.0 0 -5509967 true "" "if (alarm? = true) and (people_left > 0) [plot il1]"
-"moderate" 1.0 0 -11221820 true "" "if (alarm? = true) and (people_left > 0) [plot il2]"
-"serious" 1.0 0 -14454117 true "" "if (alarm? = true) and (people_left > 0) [plot il3]"
-"severe" 1.0 0 -1184463 true "" "if (alarm? = true) and (people_left > 0) [plot il4]"
-"critical" 1.0 0 -955883 true "" "if (alarm? = true) and (people_left > 0) [plot il5]"
-"fatal" 1.0 0 -2674135 true "" "if (alarm? = true) and (people_left > 0) [plot count people with [dead]]"
-"healthy" 1.0 0 -11085214 true "" "if (alarm? = true) and (people_left > 0) [plot il0]"
+"minor" 1.0 0 -5509967 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 153 255 102] / people_left]"
+"moderate" 1.0 0 -11221820 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 255 255] / people_left]"
+"serious" 1.0 0 -14454117 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 153 255] / people_left]"
+"severe" 1.0 0 -1184463 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 204 0] / people_left]"
+"critical" 1.0 0 -955883 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 102 0] / people_left]"
+"fatal" 1.0 0 -2674135 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 255 0 0] / people_left]"
+"healthy" 1.0 0 -11085214 true "" "if (alarm? = true) and (people_left > 0) [plot count turtles with [color = rgb 0 255 0] / people_left]"
 
 SLIDER
-0
-133
-172
-166
+3
+153
+175
+186
 panic_fraction
 panic_fraction
 0
 100
-0.0
+10.0
 1
 1
 NIL
 HORIZONTAL
 
+TEXTBOX
+112
+225
+213
+243
+DEBUG VARIABLES
+11
+74.0
+0
+
 INPUTBOX
-106
-373
-212
-433
+107
+246
+213
+306
 people_dim
 0.75
 1
@@ -699,7 +648,7 @@ PLOT
 305
 1249
 450
-Evacuation Time
+Evacuation time
 time
 NIL
 0.0
@@ -713,21 +662,21 @@ PENS
 "evacuation time" 1.0 0 -8630108 true "" "let evac_people people with [evacuated]\nif any? evac_people[\n   let m mean [evac_time] of evac_people\n   if m > 0 [plot m]\n]"
 
 SWITCH
-112
-298
-239
-331
+108
+344
+235
+377
 speed_enabled
 speed_enabled
-0
+1
 1
 -1000
 
 MONITOR
-716
-110
-776
-155
+740
+386
+800
+431
 Fatal
 count people with [dead]
 17
@@ -736,20 +685,20 @@ count people with [dead]
 
 INPUTBOX
 0
-297
+309
 105
-365
+369
 injury_weight
-0.08
+0.2
 1
 0
 Number
 
 SWITCH
-188
-133
-315
-166
+108
+309
+235
+342
 real_exits
 real_exits
 0
@@ -757,10 +706,10 @@ real_exits
 -1000
 
 MONITOR
-657
-66
-716
-111
+740
+156
+799
+201
 Minor
 il1
 17
@@ -768,10 +717,10 @@ il1
 11
 
 MONITOR
-716
-66
-775
-111
+740
+202
+799
+247
 Moderate
 il2
 17
@@ -779,10 +728,10 @@ il2
 11
 
 MONITOR
-775
-66
-834
-111
+740
+248
+799
+293
 Serious
 il3
 17
@@ -790,10 +739,10 @@ il3
 11
 
 MONITOR
-598
-110
-657
-155
+740
+294
+799
+339
 Severe
 il4
 17
@@ -801,21 +750,31 @@ il4
 11
 
 MONITOR
-657
-110
-716
-155
+740
+340
+800
+385
 Critical
 il5
 17
 1
 11
 
-MONITOR
-598
-66
-657
+TEXTBOX
+732
+93
+812
 111
+INJURY LEVELS
+11
+0.0
+1
+
+MONITOR
+740
+110
+799
+155
 Healthy
 il0
 17
@@ -823,49 +782,23 @@ il0
 11
 
 SWITCH
-188
-98
-314
-131
-glass_bottles
-glass_bottles
 0
+398
+126
+431
+glass_bottles
+glass_bottles
+1
 1
 -1000
 
 SLIDER
-113
-333
-239
-366
-slipping_chance
-slipping_chance
 0
-100
-1.0
-1
-1
-NIL
-HORIZONTAL
-
-MONITOR
-634
-10
-738
-55
-Evacuation time
-time_of_evacuation
-17
-1
-11
-
-SLIDER
-0
-177
+437
 126
-210
-female_fraction
-female_fraction
+470
+slipping_chance
+slipping_chance
 0
 100
 50.0
@@ -873,69 +806,6 @@ female_fraction
 1
 NIL
 HORIZONTAL
-
-SLIDER
-136
-177
-262
-210
-elderly_fraction
-elderly_fraction
-0
-100 - adult_fraction
-10.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-136
-210
-262
-243
-children_fraction
-children_fraction
-0
-100 - adult_fraction - elderly_fraction
-10.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-0
-210
-126
-243
-adult_fraction
-adult_fraction
-0
-100
-80.0
-1
-1
-NIL
-HORIZONTAL
-
-PLOT
-594
-214
-837
-360
-Average Speed
-time
-m/s
-0.0
-10.0
-0.0
-5.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -14835848 true "" " if (count people > 0) and (alarm? = true) [plot mean [speed] of people]"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -1283,319 +1153,6 @@ NetLogo 6.3.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
-<experiments>
-  <experiment name="descriptive" repetitions="10" runMetricsEveryStep="false">
-    <setup>setup
-start_evacuation</setup>
-    <go>start_simulation</go>
-    <final>export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/evacuation_speed_run_" behaviorspace-run-number ".csv")
-export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/evacuation_time_run_" behaviorspace-run-number ".csv")
-export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/descriptive/average_speed_run_" behaviorspace-run-number ".csv")</final>
-    <metric>il0</metric>
-    <metric>il1</metric>
-    <metric>il2</metric>
-    <metric>il3</metric>
-    <metric>il4</metric>
-    <metric>il5</metric>
-    <metric>count people with [dead]</metric>
-    <enumeratedValueSet variable="scale">
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="glass_bottles">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="adult_fraction">
-      <value value="80"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="population">
-      <value value="30000"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="elderly_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="slipping_chance">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="people_dim">
-      <value value="0.75"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="wall-thickness">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="speed_enabled">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="panic_fraction">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="aware_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="female_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="children_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="real_exits">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="speculative_num_people" repetitions="1" runMetricsEveryStep="false">
-    <setup>setup
-start_evacuation</setup>
-    <go>start_simulation</go>
-    <final>export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/number_of_people/evacuation_speed/evacuation_speed_run_" behaviorspace-run-number ".csv")
-export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/number_of_people/evacuation_time/evacuation_time_run_" behaviorspace-run-number ".csv")
-export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/number_of_people/average_speed/average_speed_run_" behaviorspace-run-number ".csv")</final>
-    <metric>il0</metric>
-    <metric>il1</metric>
-    <metric>il2</metric>
-    <metric>il3</metric>
-    <metric>il4</metric>
-    <metric>il5</metric>
-    <metric>count people with [dead]</metric>
-    <enumeratedValueSet variable="scale">
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="glass_bottles">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="adult_fraction">
-      <value value="80"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="population">
-      <value value="30000"/>
-      <value value="27500"/>
-      <value value="25000"/>
-      <value value="22500"/>
-      <value value="20000"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="elderly_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="slipping_chance">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="people_dim">
-      <value value="0.75"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="wall-thickness">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="speed_enabled">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="panic_fraction">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="aware_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="female_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="children_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="real_exits">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="speculative_aware_fraction" repetitions="1" runMetricsEveryStep="false">
-    <setup>setup
-start_evacuation</setup>
-    <go>start_simulation</go>
-    <final>export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/aware_fraction/evacuation_speed/evacuation_speed_run_" behaviorspace-run-number ".csv")
-export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/aware_fraction/evacuation_time/evacuation_time_run_" behaviorspace-run-number ".csv")
-export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/aware_fraction/average_speed/average_speed_run_" behaviorspace-run-number ".csv")</final>
-    <metric>il0</metric>
-    <metric>il1</metric>
-    <metric>il2</metric>
-    <metric>il3</metric>
-    <metric>il4</metric>
-    <metric>il5</metric>
-    <metric>count people with [dead]</metric>
-    <enumeratedValueSet variable="scale">
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="glass_bottles">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="adult_fraction">
-      <value value="80"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="population">
-      <value value="30000"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="elderly_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="slipping_chance">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="people_dim">
-      <value value="0.75"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="wall-thickness">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="speed_enabled">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="panic_fraction">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="aware_fraction">
-      <value value="50"/>
-      <value value="60"/>
-      <value value="70"/>
-      <value value="80"/>
-      <value value="90"/>
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="female_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="children_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="real_exits">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="speculative_accessible_exits" repetitions="3" runMetricsEveryStep="false">
-    <setup>setup
-start_evacuation</setup>
-    <go>start_simulation</go>
-    <final>export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/accessible_exits/evacuation_speed/evacuation_speed_run_" behaviorspace-run-number ".csv")
-export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/accessible_exits/evacuation_time/evacuation_time_run_" behaviorspace-run-number ".csv")
-export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/accessible_exits/average_speed/average_speed_run_" behaviorspace-run-number ".csv")</final>
-    <metric>il0</metric>
-    <metric>il1</metric>
-    <metric>il2</metric>
-    <metric>il3</metric>
-    <metric>il4</metric>
-    <metric>il5</metric>
-    <metric>count people with [dead]</metric>
-    <enumeratedValueSet variable="scale">
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="glass_bottles">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="adult_fraction">
-      <value value="80"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="population">
-      <value value="30000"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="elderly_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="slipping_chance">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="people_dim">
-      <value value="0.75"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="wall-thickness">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="speed_enabled">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="panic_fraction">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="aware_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="female_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="children_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="real_exits">
-      <value value="true"/>
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="speculative_glass_bottles" repetitions="3" runMetricsEveryStep="false">
-    <setup>setup
-start_evacuation</setup>
-    <go>start_simulation</go>
-    <final>export-plot "Evacuation Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/glass_bottles/evacuation_speed/evacuation_speed_run_" behaviorspace-run-number ".csv")
-export-plot "Evacuation Time" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/glass_bottles/evacuation_time/evacuation_time_run_" behaviorspace-run-number ".csv")
-export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculative/glass_bottles/average_speed/average_speed_run_" behaviorspace-run-number ".csv")</final>
-    <metric>il0</metric>
-    <metric>il1</metric>
-    <metric>il2</metric>
-    <metric>il3</metric>
-    <metric>il4</metric>
-    <metric>il5</metric>
-    <metric>count people with [dead]</metric>
-    <enumeratedValueSet variable="scale">
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="glass_bottles">
-      <value value="true"/>
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="adult_fraction">
-      <value value="80"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="population">
-      <value value="30000"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="elderly_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="slipping_chance">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="people_dim">
-      <value value="0.75"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="wall-thickness">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="speed_enabled">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="panic_fraction">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="aware_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="female_fraction">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="children_fraction">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="real_exits">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="injury_weight">
-      <value value="0.08"/>
-    </enumeratedValueSet>
-  </experiment>
-</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
