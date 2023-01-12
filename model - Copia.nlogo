@@ -190,7 +190,8 @@ to start_simulation
       set decision_to_take first rnd:weighted-one-of-list pairs last
       ;if the decision_to_take is rational proceed as usual otherwise follow the crowd
       ifelse (decision_to_take = true)
-        [move_forward]
+        [move_forward
+         set panic false]
         [follow_crowd]
     ]
   ]
@@ -483,7 +484,7 @@ INPUTBOX
 287
 178
 population
-30000.0
+300.0
 1
 0
 Number
@@ -616,7 +617,7 @@ panic_fraction
 panic_fraction
 0
 100
-10.0
+50.0
 1
 1
 NIL
@@ -638,7 +639,7 @@ INPUTBOX
 213
 306
 people_dim
-0.75
+10.0
 1
 0
 Number
