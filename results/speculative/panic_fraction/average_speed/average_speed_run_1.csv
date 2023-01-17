@@ -1,10 +1,10 @@
 "export-plot data (NetLogo 6.3.0)"
 "model.nlogo"
-"01/12/2023 10:44:33:300 +0000"
+"01/16/2023 09:13:34:520 +0000"
 
 "MODEL SETTINGS"
-"scale","wall-thickness","population","aware_fraction","panic_fraction","people_dim","speed_enabled","injury_weight","real_exits","glass_bottles","slipping_chance","female_fraction","elderly_fraction","children_fraction","adult_fraction"
-"2","0","30000","50","0","0.75","true","0.1365","true","false","1","50","10","10","80"
+"scale","glass_bottles","adult_fraction","population","elderly_fraction","slipping_chance","people_dim","wall-thickness","speed_enabled","panic_fraction","aware_fraction","female_fraction","children_fraction","real_exits","injury_weight"
+"2","false","80","30000","10","1","0.75","0","true","0","50","50","10","true","0.1365"
 
 """Average Speed"""
 "x min","x max","y min","y max","autoplot?","current pen","legend open?","number of pens"

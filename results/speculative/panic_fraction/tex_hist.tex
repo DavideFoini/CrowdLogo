@@ -6,9 +6,9 @@
 ybar, % style of the histogram: clustered columns
 width=\textwidth, % width of the plot
 height=8cm, % height of the plot
-title={Injury Levels}
+title={Injury Levels},
 ylabel={Amount}, % label for the y-axis
-symbolic x coords={HEALTHY,MINOR,MODERATE,SERIOUS,	SEVERE,CRITICAL,FATAL}, % labels for the x-ticks
+symbolic x coords={HEALTHY,MINOR,MODERATE,SERIOUS,SEVERE,CRITICAL,FATAL}, % labels for the x-ticks
 xtick=data, % position the x-ticks at the data points
 ymin=0, % minimum value of the y-axis
 legend style={at={(1,1)}, anchor=north east}, % position of the legend
@@ -16,13 +16,13 @@ legend cell align=left, % alignment of the legend cells
 ymajorgrids=true, % display major grids
 bar width=0.25cm % width of the bars
 ]
-\addplot[color=blue] coordinates{}; % plot of the first histogram
-\addplot[color=teal] coordinates{}; % plot of the second histogram
-\addplot[color=cyan] coordinates{}; % plot of the third histogram
-\addplot[color=red] coordinates{}; % plot of the fourth histogram
-\addplot[color=orange] coordinates{}; % plot of the fifth histogram
-\addplot[color=yellow] coordinates{}; % plot of the first histogram
-\legend{50\%, 60\%, 70\%, 80\%, 90\%, 100\%} % legend of the plot
+\addplot[color=Turquoise] coordinates{}; % plot of the first histogram
+\addplot[color=Green] coordinates{}; % plot of the second histogram
+\addplot[color=Orange] coordinates{}; % plot of the first histogram
+\addplot[color=Red] coordinates{}; % plot of the third histogram
+\addplot[color=JungleGreen] coordinates{}; % plot of the fifth histogram
+\addplot[color=Magenta] coordinates{}; % plot of the fourth histogram
+\legend{0\%, 10\%, 20\%, 30\%, 40\%, 50\%} % legend of the plot
 \end{axis}
 \end{tikzpicture}
 \end{document}

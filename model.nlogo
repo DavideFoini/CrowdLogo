@@ -188,7 +188,7 @@ to setup
   ask n-of (round female_fraction / 100 * population) people [set gender "F"]
   ask n-of (round children_fraction / 100 * population) people [set age "C"]
   ask n-of (round elderly_fraction / 100 * population) people [set age "E"]
-  ask people with [panic = true] [set panic_percentage random-float 0.75]; setting value in range (0,0.6) if panic is present
+  ask people with [panic = true] [set panic_percentage random-float 0.75]; setting value in range (0,0.75) if panic is present
 
 end
 
@@ -679,7 +679,7 @@ panic_fraction
 panic_fraction
 0
 100
-10.0
+0.0
 1
 1
 NIL
@@ -1640,11 +1640,11 @@ export-plot "Average Speed" (word "C:/Users/dadpl/git/CrowdLogo/results/speculat
     </enumeratedValueSet>
     <enumeratedValueSet variable="panic_fraction">
       <value value="0"/>
+      <value value="10"/>
       <value value="20"/>
+      <value value="30"/>
       <value value="40"/>
-      <value value="60"/>
-      <value value="80"/>
-      <value value="100"/>
+      <value value="50"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="aware_fraction">
       <value value="50"/>
